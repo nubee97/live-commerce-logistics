@@ -1,197 +1,138 @@
-// import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { supabase } from "../lib/supabase.js";
 
-// const KEY = "lcl_session_v1";
-// const AuthCtx = createContext(null);
-
-// const DEFAULT = {
-//   role: null,
-//   username: "",
-//   influencerName: "",
-// };
-
-// const USERS = [
-//   {
-//     username: "Admin",
-//     password: "Admin123",
-//     role: "admin",
-//     influencerName: "",
-//   },
-//   {
-//     username: "User1",
-//     password: "inf1",
-//     role: "influencer",
-//     influencerName: "User1",
-//   },
-//   {
-//     username: "User2",
-//     password: "inf2",
-//     role: "influencer",
-//     influencerName: "User2",
-//   },
-// ];
-
-// export function AuthProvider({ children }) {
-//   const [session, setSession] = useState(() => {
-//     try {
-//       const raw = localStorage.getItem(KEY);
-//       return raw ? JSON.parse(raw) : DEFAULT;
-//     } catch {
-//       return DEFAULT;
-//     }
-//   });
-
-//   useEffect(() => {
-//     localStorage.setItem(KEY, JSON.stringify(session));
-//   }, [session]);
-
-//   const api = useMemo(() => {
-//     return {
-//       session,
-//       isAuthed: !!session.role,
-//       isAdmin: session.role === "admin",
-//       isInfluencer: session.role === "influencer",
-
-//       login(username, password) {
-//         const found = USERS.find(
-//           (u) => u.username === username && u.password === password
-//         );
-
-//         if (!found) {
-//           return {
-//             ok: false,
-//             error: "Invalid ID or password.",
-//           };
-//         }
-
-//         setSession({
-//           role: found.role,
-//           username: found.username,
-//           influencerName: found.influencerName || "",
-//         });
-
-//         return {
-//           ok: true,
-//           role: found.role,
-//         };
-//       },
-
-//       logout() {
-//         setSession(DEFAULT);
-//       },
-//     };
-//   }, [session]);
-
-//   return <AuthCtx.Provider value={api}>{children}</AuthCtx.Provider>;
-// }
-
-// export function useAuth() {
-//   const v = useContext(AuthCtx);
-//   if (!v) throw new Error("useAuth must be used within AuthProvider");
-//   return v;
-// }
-
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-
-const KEY = "lcl_session_v1";
 const AuthCtx = createContext(null);
 
 const DEFAULT = {
   role: null,
   influencerName: "",
   userId: "",
+  accountId: "",
+  sessionToken: "",
+  expiresAt: "",
 };
 
-const ACCOUNTS = [
-  {
-    id: "Admin",
-    password: "Admin123",
-    role: "admin",
-    influencerName: "",
-  },
-  {
-    id: "User1",
-    password: "inf1",
-    role: "influencer",
-    influencerName: "User1",
-  },
-  {
-    id: "User2",
-    password: "inf2",
-    role: "influencer",
-    influencerName: "User2",
-  },
-];
+function normalizeRole(value) {
+  const role = String(value || "").trim().toLowerCase();
+  if (role === "admin") return "admin";
+  if (role === "influencer") return "influencer";
+  return null;
+}
+
+function buildSession(row) {
+  return {
+    role: normalizeRole(row?.role),
+    influencerName: String(row?.influencer_name || "").trim(),
+    userId: String(row?.login_id || "").trim(),
+    accountId: String(row?.account_id || "").trim(),
+    sessionToken: String(row?.session_token || "").trim(),
+    expiresAt: String(row?.expires_at || "").trim(),
+  };
+}
+
+function extractRpcRow(data) {
+  if (Array.isArray(data)) return data[0] || null;
+  if (data && typeof data === "object") return data;
+  return null;
+}
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      return raw ? JSON.parse(raw) : DEFAULT;
-    } catch {
-      return DEFAULT;
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(KEY, JSON.stringify(session));
-  }, [session]);
+  const [session, setSession] = useState(DEFAULT);
+  const [authLoading, setAuthLoading] = useState(false);
 
   const api = useMemo(() => {
     return {
       session,
+      authLoading,
       isAuthed: !!session.role,
       isAdmin: session.role === "admin",
       isInfluencer: session.role === "influencer",
 
-      login(id, password) {
-        const match = ACCOUNTS.find(
-          (acc) => acc.id === id && acc.password === password
-        );
+      async login(id, password) {
+        try {
+          if (!supabase) {
+            throw new Error("Supabase is not configured.");
+          }
 
-        if (!match) {
+          setAuthLoading(true);
+
+          const loginId = String(id || "").trim();
+          const pw = String(password || "");
+
+          if (!loginId || !pw) {
+            return {
+              ok: false,
+              error: "Please enter both ID and password.",
+            };
+          }
+
+          const { data, error } = await supabase.rpc("app_login", {
+            p_login_id: loginId,
+            p_password: pw,
+          });
+
+          console.log("app_login result:", { loginId, data, error });
+
+          if (error) {
+            return {
+              ok: false,
+              error: error.message || "Login failed.",
+            };
+          }
+
+          const row = extractRpcRow(data);
+
+          if (!row) {
+            return {
+              ok: false,
+              error: "Invalid login credentials.",
+            };
+          }
+
+          const nextSession = buildSession(row);
+
+          if (!nextSession.role) {
+            return {
+              ok: false,
+              error: "This account does not have a valid role.",
+            };
+          }
+
+          setSession(nextSession);
+
+          return {
+            ok: true,
+            ...nextSession,
+          };
+        } catch (error) {
+          console.error("Login failed:", error);
           return {
             ok: false,
-            error: "Invalid ID or password.",
+            error: error?.message || "Login failed.",
           };
+        } finally {
+          setAuthLoading(false);
         }
-
-        const nextSession = {
-          role: match.role,
-          influencerName: match.influencerName || "",
-          userId: match.id,
-        };
-
-        setSession(nextSession);
-
-        return {
-          ok: true,
-          role: match.role,
-          influencerName: match.influencerName || "",
-          userId: match.id,
-        };
       },
 
-      loginAdmin() {
-        setSession({
-          role: "admin",
-          influencerName: "",
-          userId: "Admin",
-        });
-      },
+      async logout() {
+        try {
+          setAuthLoading(true);
 
-      loginInfluencer(influencerName) {
-        setSession({
-          role: "influencer",
-          influencerName: influencerName || "",
-          userId: influencerName || "",
-        });
-      },
-
-      logout() {
-        setSession(DEFAULT);
+          if (supabase && session.sessionToken) {
+            await supabase.rpc("app_logout", {
+              p_session_token: session.sessionToken,
+            });
+          }
+        } catch (error) {
+          console.error("Logout failed:", error);
+        } finally {
+          setSession(DEFAULT);
+          setAuthLoading(false);
+        }
       },
     };
-  }, [session]);
+  }, [session, authLoading]);
 
   return <AuthCtx.Provider value={api}>{children}</AuthCtx.Provider>;
 }

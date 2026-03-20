@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState } from "react";
 import { useStore } from "../data/StoreProvider.jsx";
 import { newId } from "../data/store.js";
@@ -36,6 +34,8 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [saving, setSaving] = useState(false);
   const [showExcelImport, setShowExcelImport] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [expandedItems, setExpandedItems] = useState({});
 
   const selected = (state.orders || []).find((o) => o.id === selectedId);
 
@@ -187,6 +187,12 @@ export default function Orders() {
 
     await persistOrderAndLines(nextOrder, lines, nextOrder.id);
   }
+  function toggleExpand(key) {
+  setExpandedItems((prev) => ({
+    ...prev,
+    [key]: !prev[key],
+  }));
+}
 
   async function createOrder() {
     if (!isAdmin && !session.influencerName) {
@@ -285,6 +291,18 @@ export default function Orders() {
     const nextLines = lines.filter((l) => l.id !== id);
     await persistOrderAndLines(selected, nextLines, selected.id);
   }
+  async function deleteSelectedLines() {
+  if (selectedProducts.length === 0) return;
+
+  const ok = window.confirm("Delete selected items?");
+  if (!ok) return;
+
+  const nextLines = lines.filter((l) => !selectedProducts.includes(l.id));
+
+  await persistOrderAndLines(selected, nextLines, selected.id);
+
+  setSelectedProducts([]);
+}
 
   const formCompletion = useMemo(() => {
     if (!selected) return 0;
@@ -375,24 +393,40 @@ export default function Orders() {
       };
     }
 
-    if (rowType === "SET") {
-      const s =
-        findCatalogEventBySku(state, code) ||
-        (state.setProducts || []).find((x) => x.setCode === code);
+    // if (rowType === "SET") {
+    //   const s =
+    //     findCatalogEventBySku(state, code) ||
+    //     (state.setProducts || []).find((x) => x.setCode === code);
 
-      return {
-        itemCode: s?.eventSku || s?.setCode || code,
-        itemName: s?.productName || s?.setName || "",
-        sku: s?.eventSku || s?.setCode || code,
-        officialName: s?.productName || s?.setName || "",
-        brandCode: "",
-        productCode: s?.eventCode || "",
-        matchedAlias: "",
-        matchType: "EXACT",
-        supplyPrice: Number(s?.supplyPrice || 0),
-        salePrice: Number(s?.salePrice || 0),
-      };
-    }
+    //   return {
+    //     itemCode: s?.eventSku || s?.setCode || code,
+    //     itemName: s?.productName || s?.setName || "",
+    //     sku: s?.eventSku || s?.setCode || code,
+    //     officialName: s?.productName || s?.setName || "",
+    //     brandCode: "",
+    //     productCode: s?.eventCode || "",
+    //     matchedAlias: "",
+    //     matchType: "EXACT",
+    //     supplyPrice: Number(s?.supplyPrice || 0),
+    //     salePrice: Number(s?.salePrice || 0),
+    //   };
+    // }
+if (rowType === "SET") {
+  const s = (state.setProducts || []).find((x) => x.setCode === code);
+
+  return {
+    itemCode: s?.setCode || code,
+    itemName: s?.setName || "",
+    sku: s?.setCode || code,
+    officialName: s?.setName || "",
+    brandCode: "",
+    productCode: s?.setCode || "",
+    matchedAlias: "",
+    matchType: "EXACT",
+    supplyPrice: 0,
+    salePrice: 0,
+  };
+}
 
     const g =
       findGiftByCode(state, code) ||
@@ -412,7 +446,72 @@ export default function Orders() {
     };
   }
 
+// function getSetComponents(code) {
+//   if (!code) return [];
+
+//   const set = (state.setProducts || []).find((s) => s.setCode === code);
+//   if (!set || !set.productsInside) return [];
+
+//   const parts = set.productsInside.split(";");
+
+//   return parts.map((p) => {
+//     const [productCode, qty] = p.split(":");
+
+//     const product =
+//       (state.catalogProducts || []).find(
+//         (x) => x.sku === productCode || x.productCode === productCode
+//       ) ||
+//       (state.mainProducts || []).find((x) => x.productCode === productCode);
+
+//     return {
+//       name: product?.productName || productCode,
+//       qty: Number(qty || 1),
+//     };
+//   });
+// }  
+
+function getSetComponents(code) {
+  if (!code) return [];
+
+  const components = (state.setComponents || []).filter(
+    (c) => c.setCode === code
+  );
+
+  return components.map((c) => {
+    const product =
+      (state.catalogProducts || []).find(
+        (x) => x.sku === c.productCode || x.productCode === c.productCode
+      ) ||
+      (state.mainProducts || []).find(
+        (x) => x.productCode === c.productCode
+      );
+
+    return {
+      name: product?.productName || c.productCode,
+      qty: Number(c.qtyPerSet || 1),
+    };
+  });
+}
   const lineCols = [
+    {
+  key: "select",
+  label: "",
+  render: (row) => (
+    <input
+      type="checkbox"
+      checked={selectedProducts.includes(row.id)}
+      onChange={(e) => {
+        if (e.target.checked) {
+          setSelectedProducts([...selectedProducts, row.id]);
+        } else {
+          setSelectedProducts(
+            selectedProducts.filter((id) => id !== row.id)
+          );
+        }
+      }}
+    />
+  )
+},
     {
       key: "itemType",
       label: "Type",
@@ -467,6 +566,8 @@ export default function Orders() {
       render: (row) => <span>{row.sku || row.itemCode || ""}</span>,
     },
     { key: "qty", label: "Qty", type: "number" },
+    // added on the 16th: show sale price or retail price if sale price is not available
+    { key: "salePrice", label: "Sale Price", render: (row) => <span>{row.retailPrice || row.salePrice}</span> },
   ];
 
   const isLocked = !!selected?.status && selected.status !== "DRAFT";
@@ -475,13 +576,15 @@ export default function Orders() {
     const map = new Map();
 
     for (const line of lines) {
-      const key = `${line.itemType}_${line.sku || line.itemCode || line.itemName || "unknown"}`;
-      const prev = map.get(key) || {
-        itemType: line.itemType,
-        itemCode: line.sku || line.itemCode || "",
-        itemName: line.officialName || line.itemName || "(Unselected item)",
-        qty: 0,
-      };
+      const code = line.sku || line.itemCode || "";
+const key = `${line.itemType}_${code}`;
+
+const prev = map.get(key) || {
+  itemType: line.itemType,
+  itemCode: code,
+  itemName: line.officialName || line.itemName || "(Unselected item)",
+  qty: 0,
+};
 
       prev.qty += Number(line.qty) || 0;
       map.set(key, prev);
@@ -507,6 +610,28 @@ export default function Orders() {
 
     return required.every(Boolean);
   }, [selected, lines, invalidLineCount]);
+function getMissingFields() {
+  if (!selected) return [];
+
+  const missing = [];
+
+  if (!selected.customerName) missing.push("Customer Name");
+  if (!selected.recipientName) missing.push("Recipient Name");
+  if (!selected.phone) missing.push("Phone");
+  if (!selected.shippingMethod) missing.push("Shipping Method");
+  if (!selected.addressMain) missing.push("Address");
+  if (!selected.addressDetail) missing.push("Address Detail");
+  if (lines.length === 0) missing.push("Order Items");
+
+  if (invalidLineCount > 0) missing.push("Incomplete Item Lines");
+
+  return missing;
+}
+const missingFields = getMissingFields();
+
+function isMissing(field) {
+  return missingFields.includes(field);
+}
 
   async function sellerConfirmOrder() {
     if (!selected) return;
@@ -515,14 +640,14 @@ export default function Orders() {
       setError("This order has already been confirmed.");
       return;
     }
+const missing = getMissingFields();
 
-    if (!canSellerSubmit) {
-      setError(
-        "Please complete customer, address, and order line information before confirming the order."
-      );
-      return;
-    }
-
+if (missing.length > 0) {
+  setError(
+    `Please complete the following fields before confirming: ${missing.join(", ")}`
+  );
+  return;
+}
     const ok = window.confirm(
       "이 주문을 확정하시겠습니까? / Are you sure you want to confirm this order?"
     );
@@ -635,7 +760,6 @@ function downloadOrderTemplate() {
     </button>
 
     
-
     <button className="btn ghost" onClick={downloadOrderTemplate}>
       Download Template
     </button>
@@ -655,12 +779,12 @@ function downloadOrderTemplate() {
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             <option value="ALL">All Statuses</option>
-            <option value="DRAFT">Draft</option>
+            {/* <option value="DRAFT">Draft</option> */}
             <option value="CONFIRMED">Confirmed</option>
-            <option value="PACKED">Packed</option>
+            {/* <option value="PACKED">Packed</option>
             <option value="SHIPPED">Shipped</option>
             <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="CANCELLED">Cancelled</option> */}
           </select>
         </div>
 
@@ -710,6 +834,7 @@ function downloadOrderTemplate() {
                       </button>
 
                       {!isAdmin && (
+                        // draft orders can be deleted by sellers, but confirmed orders cannot
                         <div className="orderInboxActions">
                           <button
                             className="btn danger"
@@ -848,7 +973,8 @@ function downloadOrderTemplate() {
               <div>
                 <div className="label">Customer Name</div>
                 <input
-                  className="input"
+                  // className="input"
+                  className={`input ${isMissing("Customer Name") ? "inputError" : ""}`}
                   value={selected.customerName || ""}
                   disabled={isLocked || saving}
                   onChange={(e) => updateOrderPatch({ customerName: e.target.value })}
@@ -859,7 +985,8 @@ function downloadOrderTemplate() {
               <div>
                 <div className="label">Recipient Name</div>
                 <input
-                  className="input"
+                  // className="input"
+                  className={`input ${isMissing("Recipient Name") ? "inputError" : ""}`}
                   value={selected.recipientName || ""}
                   disabled={isLocked || saving}
                   onChange={(e) => rebuildAddress({ recipientName: e.target.value })}
@@ -870,7 +997,8 @@ function downloadOrderTemplate() {
               <div>
                 <div className="label">Phone</div>
                 <input
-                  className="input"
+                  // className="input"
+                  className={`input ${isMissing("Phone") ? "inputError" : ""}`}
                   value={selected.phone || ""}
                   disabled={isLocked || saving}
                   onChange={(e) => rebuildAddress({ phone: e.target.value })}
@@ -881,7 +1009,8 @@ function downloadOrderTemplate() {
               <div>
                 <div className="label">Shipping Method</div>
                 <select
-                  className="select"
+                  // className="select"
+                  className={`select ${isMissing("Shipping Method") ? "inputError" : ""}`}
                   value={selected.shippingMethod || "택배"}
                   disabled={isLocked || saving}
                   onChange={(e) => updateOrderPatch({ shippingMethod: e.target.value })}
@@ -935,7 +1064,9 @@ function downloadOrderTemplate() {
 
                   <div style={{ marginTop: 10 }}>
                     <input
-                      className="input"
+                      // className="input"
+                      className={`input ${isMissing("Address") ? "inputError" : ""}`}
+                      
                       value={selected.addressMain || ""}
                       disabled={isLocked || saving}
                       onChange={(e) => rebuildAddress({ addressMain: e.target.value })}
@@ -945,7 +1076,8 @@ function downloadOrderTemplate() {
 
                   <div style={{ marginTop: 10 }}>
                     <input
-                      className="input"
+                      // className="input"
+                      className={`input ${isMissing("Address Detail") ? "inputError" : ""}`}
                       value={selected.addressDetail || ""}
                       disabled={isLocked || saving}
                       onChange={(e) => rebuildAddress({ addressDetail: e.target.value })}
@@ -1067,7 +1199,7 @@ function downloadOrderTemplate() {
                 </div>
               ) : (
                 <div className="orderedSummaryList">
-                  {orderedItemsSummary.map((item, idx) => (
+                  {/* {orderedItemsSummary.map((item, idx) => (
                     <div
                       key={`${item.itemType}_${item.itemCode}_${idx}`}
                       className="orderedSummaryRow"
@@ -1086,11 +1218,80 @@ function downloadOrderTemplate() {
 
                       <div className="orderedSummaryQty">x{item.qty}</div>
                     </div>
-                  ))}
+                  ))} */}
+{orderedItemsSummary.map((item, idx) => {
+
+  const key = `${item.itemType}_${item.itemCode}_${idx}`;
+  const expanded = expandedItems[key];
+
+const components =
+  item.itemType === "SET"
+    ? getSetComponents(item.itemCode || item.sku)
+    : [];
+    
+  return (
+    <div key={key} className="orderedSummaryRow">
+
+      <div className="orderedSummaryLeft">
+
+        <div
+          className="orderedSummaryName"
+          style={{ cursor: components.length ? "pointer" : "default" }}
+          onClick={() => {
+            if (components.length) toggleExpand(key);
+          }}
+        >
+
+          {components.length > 0 && (
+            <span className="expandArrow">
+              {expanded ? "▼" : "▶"}
+            </span>
+          )}
+
+          {item.itemName || "(Unselected item)"}
+
+        </div>
+
+        <div className="orderedSummaryMeta">
+          <span className="miniChip">{item.itemType}</span>
+
+          {item.itemCode && (
+            <span className="small">{item.itemCode}</span>
+          )}
+        </div>
+
+        {expanded && components.length > 0 && (
+          <div style={{ marginTop: 6, marginLeft: 18, fontSize: 13, opacity: 0.85 }}>
+            {components.map((c, i) => (
+              <div key={i}>
+                • {c.name} × {c.qty}
+              </div>
+            ))}
+          </div>
+        )}
+
+      </div>
+
+      <div className="orderedSummaryQty">
+        x{item.qty}
+      </div>
+
+    </div>
+  );
+})}
                 </div>
               )}
 
               <div className="builderSection" style={{ marginTop: 16 }}>
+                <div style={{marginBottom:10}}>
+<button
+className="btn danger"
+onClick={deleteSelectedLines}
+disabled={selectedProducts.length === 0}
+>
+Delete Selected ({selectedProducts.length})
+</button>
+</div>
                 <EditableTable
                   rows={lines}
                   columns={lineCols}
@@ -1181,10 +1382,9 @@ function downloadOrderTemplate() {
                     <button
                       className="btn primary"
                       disabled={
-                        saving ||
-                        !canSellerSubmit ||
-                        (selected?.status || "DRAFT") !== "DRAFT"
-                      }
+  saving ||
+  (selected?.status || "DRAFT") !== "DRAFT"
+}
                       onClick={sellerConfirmOrder}
                       type="button"
                     >

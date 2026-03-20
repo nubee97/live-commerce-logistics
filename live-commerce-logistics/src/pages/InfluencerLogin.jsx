@@ -1,97 +1,32 @@
-// import React, { useState } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { useAuth } from "../auth/AuthProvider.jsx";
-
-// const INFLUENCER_PASSWORD = "inf123";
-
-// export default function InfluencerLogin() {
-//   const nav = useNavigate();
-//   const { loginInfluencer } = useAuth();
-
-//   const [name, setName] = useState("");
-//   const [pw, setPw] = useState("");
-//   const [err, setErr] = useState("");
-
-//   return (
-//     <div className="authShell">
-//       <div className="authBackdrop" />
-
-//       <div className="authCardPro">
-//         <div className="authBrandRow">
-//           <div className="brandBadge small">LC</div>
-//           <div>
-//             <div className="eyebrow">Influencer Portal</div>
-//             <h1 className="authTitle">Influencer / Seller Login</h1>
-//           </div>
-//         </div>
-
-//         <p className="authSubtitle">
-//           Access the order submission workspace used by influencers and sellers working with your company.
-//         </p>
-
-//         <div className="authDivider" />
-
-//         <div className="formBlock">
-//           <label className="labelPro">Influencer / Seller Name</label>
-//           <input
-//             className="inputPro"
-//             value={name}
-//             onChange={(e) => setName(e.target.value)}
-//             placeholder="Enter your name"
-//           />
-//         </div>
-
-//         <div className="formBlock">
-//           <label className="labelPro">Password</label>
-//           <input
-//             className="inputPro"
-//             type="password"
-//             value={pw}
-//             onChange={(e) => setPw(e.target.value)}
-//             placeholder="Enter password"
-//           />
-//         </div>
-
-//         {err && <div className="errorBanner">{err}</div>}
-
-//         <div className="authActionRow">
-//           <button className="btn ghostBtn" onClick={() => nav("/")} type="button">
-//             Back
-//           </button>
-
-//           <button
-//             className="btn primary authPrimaryBtn"
-//             onClick={() => {
-//               setErr("");
-//               if (!name.trim()) return setErr("Please enter your name.");
-//               if (pw !== INFLUENCER_PASSWORD) return setErr("Wrong password.");
-//               loginInfluencer(name.trim());
-//               nav("/orders");
-//             }}
-//             type="button"
-//           >
-//             Login to Influencer Workspace
-//           </button>
-//         </div>
-
-//         <div className="authFootnote">
-//           This login gives access only to the Influencer / Seller order page.
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider.jsx";
 
 export default function InfluencerLogin() {
   const nav = useNavigate();
-  const { login } = useAuth();
+  const { login, authLoading } = useAuth();
 
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
+
+  async function handleLogin() {
+    setErr("");
+
+    const result = await login(id.trim(), pw);
+
+    if (!result?.ok) {
+      setErr(result?.error || "Login failed.");
+      return;
+    }
+
+    if (result.role !== "influencer") {
+      setErr("This is not an influencer account.");
+      return;
+    }
+
+    nav("/orders");
+  }
 
   return (
     <div className="authShell">
@@ -119,6 +54,10 @@ export default function InfluencerLogin() {
             value={id}
             onChange={(e) => setId(e.target.value)}
             placeholder="Enter user ID"
+            disabled={authLoading}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleLogin();
+            }}
           />
         </div>
 
@@ -130,35 +69,37 @@ export default function InfluencerLogin() {
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             placeholder="Enter password"
+            disabled={authLoading}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleLogin();
+            }}
           />
         </div>
 
         {err && <div className="errorBanner">{err}</div>}
 
         <div className="authActionRow">
-          <button className="btn ghostBtn" onClick={() => nav("/")} type="button">
+          <button
+            className="btn ghostBtn"
+            onClick={() => nav("/")}
+            type="button"
+            disabled={authLoading}
+          >
             Back
           </button>
 
           <button
             className="btn primary authPrimaryBtn"
-            onClick={() => {
-              setErr("");
-              const result = login(id.trim(), pw);
-              if (!result.ok) return setErr(result.error);
-              if (result.role !== "influencer") {
-                return setErr("This is not an influencer account.");
-              }
-              nav("/orders");
-            }}
+            onClick={handleLogin}
             type="button"
+            disabled={authLoading}
           >
-            Login to Influencer Workspace
+            {authLoading ? "Logging in..." : "Login to Influencer Workspace"}
           </button>
         </div>
 
         <div className="authFootnote">
-          {/* Available influencer accounts: <strong>User1 / inf1</strong>, <strong>User2 / inf2</strong> */}
+          {/* Available influencer accounts: User1 / inf1, User2 / inf2 */}
         </div>
       </div>
     </div>

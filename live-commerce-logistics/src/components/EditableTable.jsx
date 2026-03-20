@@ -1,4 +1,3 @@
-// src/components/EditableTable.jsx
 import React from "react";
 
 function getCellStyle(column = {}) {
@@ -37,10 +36,21 @@ export default function EditableTable({
   const safeRows = Array.isArray(rows) ? rows : [];
   const safeCols = Array.isArray(columns) ? columns : [];
 
+  function handleDelete(rowId) {
+    if (typeof onDelete !== "function") return;
+    const ok = window.confirm("Delete this row?");
+    if (!ok) return;
+    onDelete(rowId);
+  }
+
   return (
     <div>
       <div className="toolbar noPrint">
-        <button className="btn" onClick={onAdd} type="button">
+        <button
+          className="btn"
+          onClick={() => onAdd?.()}
+          type="button"
+        >
           {addLabel}
         </button>
         <div className="small">{safeRows.length} row(s)</div>
@@ -60,7 +70,10 @@ export default function EditableTable({
                   {c.label}
                 </th>
               ))}
-              <th className="right noPrint etableHeadCell" style={{ minWidth: 110 }}>
+              <th
+                className="right noPrint etableHeadCell"
+                style={{ minWidth: 110 }}
+              >
                 Actions
               </th>
             </tr>
@@ -128,7 +141,9 @@ export default function EditableTable({
                         <select
                           className={`select ${c.compact ? "etableCompactInput" : ""}`}
                           value={value}
-                          onChange={(e) => onUpdate(r.id, { [c.key]: e.target.value })}
+                          onChange={(e) =>
+                            onUpdate?.(r.id, { [c.key]: e.target.value })
+                          }
                         >
                           {(c.options || []).map((op) => (
                             <option key={op.value} value={op.value}>
@@ -149,7 +164,8 @@ export default function EditableTable({
                                   ? ""
                                   : Number(e.target.value)
                                 : e.target.value;
-                            onUpdate(r.id, { [c.key]: v });
+
+                            onUpdate?.(r.id, { [c.key]: v });
                           }}
                           placeholder={c.placeholder || ""}
                         />
@@ -161,7 +177,7 @@ export default function EditableTable({
                 <td className="right noPrint" style={{ minWidth: 110 }}>
                   <button
                     className="btn danger"
-                    onClick={() => onDelete(r.id)}
+                    onClick={() => handleDelete(r.id)}
                     type="button"
                   >
                     Delete

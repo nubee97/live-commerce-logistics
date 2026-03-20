@@ -43,7 +43,7 @@ export default function OrderList() {
   const ordersFiltered = useMemo(() => {
     let list = [...(state.orders || [])];
 
-    const allowedStatuses = ["DRAFT", "CONFIRMED"];
+    const allowedStatuses = ["", "CONFIRMED"];
     list = list.filter((o) => allowedStatuses.includes(o.status || "DRAFT"));
 
     if (status !== "ALL") {
@@ -111,107 +111,6 @@ export default function OrderList() {
     setToDate("");
   }
 
-// function saveOrderCsv(order) {
-//   const pick = computePickList(state, order.id);
-//   const gifts = computeGiftList(state, order.id);
-
-//   const confirmedTime = order.sellerSubmittedAt
-//     ? new Date(order.sellerSubmittedAt).toLocaleString()
-//     : "-";
-
-//   const baseColumns = {
-//     OrderId: order.id || "-",
-//     Seller: order.sellerName || "-",
-//     Customer: order.customerName || "-",
-//     Phone: order.phone || "-",
-//     Country: order.country || "-",
-//     City: order.city || "-",
-//     Address: order.address || "-",
-//     Shipping: order.shippingMethod || "-",
-//     Status: order.status || "DRAFT",
-//     ConfirmedAt: confirmedTime,
-//   };
-
-//   const rows = [];
-
-//   // pick rows
-//   if (pick.length > 0) {
-//     pick.forEach((r) => {
-//       rows.push({
-//         ...baseColumns,
-//         RowType: "PICK",
-//         ProductCode: r.productCode || "-",
-//         ProductName: r.productName || "-",
-//         PickQuantity: r.qty ?? 0,
-//         GiftCode: "",
-//         GiftName: "",
-//         GiftQuantity: "",
-//       });
-//     });
-//   }
-
-//   // gift rows
-//   if (gifts.length > 0) {
-//     gifts.forEach((r) => {
-//       rows.push({
-//         ...baseColumns,
-//         RowType: "GIFT",
-//         ProductCode: "",
-//         ProductName: "",
-//         PickQuantity: "",
-//         GiftCode: r.giftCode || "-",
-//         GiftName: r.giftName || "-",
-//         GiftQuantity: r.qty ?? 0,
-//       });
-//     });
-//   }
-
-//   // if no pick/gift rows at all, still export one row
-//   if (rows.length === 0) {
-//     rows.push({
-//       ...baseColumns,
-//       RowType: "ORDER",
-//       ProductCode: "",
-//       ProductName: "",
-//       PickQuantity: "",
-//       GiftCode: "",
-//       GiftName: "",
-//       GiftQuantity: "",
-//     });
-//   }
-
-//   const headers = [
-//     "OrderId",
-//     "Seller",
-//     "Customer",
-//     "Phone",
-//     "Country",
-//     "City",
-//     "Address",
-//     "Shipping",
-//     "Status",
-//     "ConfirmedAt",
-//     "RowType",
-//     "ProductCode",
-//     "ProductName",
-//     "PickQuantity",
-//     "GiftCode",
-//     "GiftName",
-//     "GiftQuantity",
-//   ];
-
-//   const csvLines = [
-//     headers.join(","),
-//     ...rows.map((row) =>
-//       headers.map((h) => escapeCsv(row[h])).join(",")
-//     ),
-//   ];
-
-//   const safeName = (order.customerName || "Customer").replace(/[^\w\-]+/g, "_");
-//   const filename = `Order_${safeName}_${order.id.slice(0, 6)}.csv`;
-
-//   downloadFile(filename, csvLines.join("\n"), "text/csv;charset=utf-8");
-// }
 function saveOrderCsv(order) {
   const pick = computePickList(state, order.id);
   const gifts = computeGiftList(state, order.id);
@@ -363,7 +262,6 @@ function saveOrderCsv(order) {
               onChange={(e) => setStatus(e.target.value)}
             >
               <option value="ALL">ALL</option>
-              <option value="DRAFT">DRAFT</option>
               <option value="CONFIRMED">CONFIRMED</option>
             </select>
           </div>

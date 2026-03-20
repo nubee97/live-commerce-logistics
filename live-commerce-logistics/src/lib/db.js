@@ -2,6 +2,12 @@
 import { initialState, newId } from "../data/store.js";
 import { supabase } from "./supabase.js";
 
+function ensureSupabase() {
+  if (!supabase) {
+    throw new Error("Supabase is not configured. Check your environment variables.");
+  }
+}
+
 function isUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     String(value || "").trim()
@@ -9,37 +15,148 @@ function isUuid(value) {
 }
 
 function safeId(value) {
-  return isUuid(value) ? value : newId();
+  return isUuid(value) ? String(value).trim() : newId();
 }
 
 function mapRows(rows, mapper = (x) => x) {
   return Array.isArray(rows) ? rows.map(mapper) : [];
 }
 
-function byCreatedDesc(a, b, key = "created_at") {
+function byCreatedDesc(a, b, key = "createdAt") {
   return String(b?.[key] || "").localeCompare(String(a?.[key] || ""));
 }
 
+function toText(value) {
+  return value == null ? "" : String(value);
+}
+
+function toTrimmedText(value) {
+  return toText(value).trim();
+}
+
+function toNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function toBoolActive(value) {
+  return value !== false;
+}
+
+function pickLastModified(row) {
+  return (
+    row?.updated_at ||
+    row?.last_modified ||
+    row?.modified_at ||
+    row?.created_at ||
+    ""
+  );
+}
+
+function normalizeProductsInside(value) {
+  if (typeof value === "string") return value;
+  if (value == null) return "";
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "";
+  }
+}
+
+function uniqueBy(list, keyFn) {
+  const seen = new Set();
+  const out = [];
+
+  for (const item of list || []) {
+    const key = keyFn(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+
+  return out;
+}
+
+async function deleteAllRows(tableName) {
+  ensureSupabase();
+  const { error } = await supabase.from(tableName).delete().not("id", "is", null);
+  if (error) throw new Error(error.message || `Failed clearing ${tableName}`);
+}
+
 async function ensureBrandExists({ brandCode, brandName }) {
-  const code = String(brandCode || "").trim();
-  const name = String(brandName || "").trim();
+  ensureSupabase();
+
+  const code = toTrimmedText(brandCode);
+  const name = toTrimmedText(brandName);
+
   if (!code || !name) return;
 
-  const { error } = await supabase.from("brands").upsert(
-    {
+  const existing = await supabase
+    .from("brands")
+    .select("id, brand_code, brand_name")
+    .eq("brand_code", code)
+    .maybeSingle();
+
+  if (existing.error) {
+    throw new Error(existing.error.message || "Failed checking brand.");
+  }
+
+  if (!existing.data) {
+    const insertRes = await supabase.from("brands").insert({
       id: newId(),
       brand_code: code,
       brand_name: name,
-    },
-    {
-      onConflict: "brand_code",
-    }
-  );
+    });
 
-  if (error) throw new Error(error.message);
+    if (insertRes.error) {
+      throw new Error(insertRes.error.message || "Failed inserting brand.");
+    }
+    return;
+  }
+
+  if (existing.data.brand_name !== name && name) {
+    const updateRes = await supabase
+      .from("brands")
+      .update({ brand_name: name })
+      .eq("id", existing.data.id);
+
+    if (updateRes.error) {
+      throw new Error(updateRes.error.message || "Failed updating brand.");
+    }
+  }
+}
+
+function buildBrandRows(payload) {
+  const explicitBrands = Array.isArray(payload?.brands) ? payload.brands : [];
+  const catalogProducts = Array.isArray(payload?.catalogProducts)
+    ? payload.catalogProducts
+    : [];
+
+  const inferredBrands = catalogProducts
+    .filter((row) => toTrimmedText(row.brandCode) && toTrimmedText(row.brandName))
+    .map((row) => ({
+      id: row.brandId || newId(),
+      brandCode: toTrimmedText(row.brandCode),
+      brandName: toTrimmedText(row.brandName),
+    }));
+
+  const combined = [...explicitBrands, ...inferredBrands];
+
+  return uniqueBy(
+    combined
+      .map((row) => ({
+        id: safeId(row.id),
+        brandCode: toTrimmedText(row.brandCode),
+        brandName: toTrimmedText(row.brandName),
+      }))
+      .filter((row) => row.brandCode && row.brandName),
+    (row) => row.brandCode
+  );
 }
 
 export async function loadAppData() {
+  ensureSupabase();
+
   const [
     brandsRes,
     productsRes,
@@ -81,142 +198,153 @@ export async function loadAppData() {
     throw new Error(errors[0].message || "Failed to load app data from Supabase.");
   }
 
+  const catalogGifts = mapRows(giftsRes.data, (r) => ({
+    id: r.id,
+    giftName: toText(r.gift_name),
+    giftCode: toText(r.gift_code),
+    stock: toNumber(r.stock),
+    lastModified: pickLastModified(r),
+  }));
+
   return {
     ...initialState,
 
     brands: mapRows(brandsRes.data, (r) => ({
       id: r.id,
-      brandCode: r.brand_code || "",
-      brandName: r.brand_name || "",
+      brandCode: toText(r.brand_code),
+      brandName: toText(r.brand_name),
+      lastModified: pickLastModified(r),
     })),
 
     catalogProducts: mapRows(productsRes.data, (r) => ({
       id: r.id,
-      brandCode: r.brand_code || "",
-      brandName: r.brand_name || "",
-      productCode: r.product_code || "",
-      sku: r.sku || "",
-      productName: r.official_product_name || "",
-      productImage: r.product_image || "",
-      advantage: r.advantage || "",
-      stock: Number(r.stock || 0),
-      supplyPrice: Number(r.supply_price || 0),
-      consumerPrice: Number(r.consumer_price || 0),
-      lowestPrice: Number(r.lowest_price || 0),
-      livePrice: Number(r.live_sale_price || 0),
-      active: r.active !== false,
+      brandCode: toText(r.brand_code),
+      brandName: toText(r.brand_name),
+      productCode: toText(r.product_code),
+      sku: toText(r.sku),
+      productName: toText(r.official_product_name),
+      productImage: toText(r.product_image),
+      advantage: toText(r.advantage),
+      stock: toNumber(r.stock),
+      supplyPrice: toNumber(r.supply_price),
+      consumerPrice: toNumber(r.consumer_price),
+      lowestPrice: toNumber(r.lowest_price),
+      livePrice: toNumber(r.live_sale_price),
+      active: toBoolActive(r.active),
+      lastModified: pickLastModified(r),
     })),
 
     catalogEvents: mapRows(eventsRes.data, (r) => ({
       id: r.id,
-      eventSku: r.event_sku || "",
-      eventCode: r.event_code || "",
-      productName: r.product_name || "",
-      productImage: r.image || "",
-      supplyPrice: Number(r.supply_price || 0),
-      salePrice: Number(r.sale_price || 0),
-      consumerPrice: Number(r.consumer_price || 0),
-      active: r.active !== false,
+      eventSku: toText(r.event_sku),
+      eventCode: toText(r.event_code),
+      productName: toText(r.product_name),
+      productImage: toText(r.image),
+      supplyPrice: toNumber(r.supply_price),
+      salePrice: toNumber(r.sale_price),
+      consumerPrice: toNumber(r.consumer_price),
+      active: toBoolActive(r.active),
+      lastModified: pickLastModified(r),
     })),
 
-    catalogGifts: mapRows(giftsRes.data, (r) => ({
-      id: r.id,
-      giftName: r.gift_name || "",
-      giftCode: r.gift_code || "",
-      stock: Number(r.stock || 0),
-    })),
+    catalogGifts,
+    gifts: catalogGifts,
 
     aliasTable: mapRows(aliasRes.data, (r) => ({
       id: r.id,
-      aliasName: r.alias_name || "",
-      targetType: r.target_type || "PRODUCT",
-      targetSku: r.target_sku || "",
-      officialName: r.official_name || "",
-      active: r.active !== false,
+      aliasName: toText(r.alias_name),
+      targetType: toText(r.target_type) || "PRODUCT",
+      targetSku: toText(r.target_sku),
+      officialName: toText(r.official_name),
+      active: toBoolActive(r.active),
+      lastModified: pickLastModified(r),
     })),
 
     mainProducts: mapRows(mainRes.data, (r) => ({
       id: r.id,
-      brandName: r.brand_name || "",
-      productName: r.product_name || "",
-      productCode: r.product_code || "",
-      stock: Number(r.stock || 0),
-      supplyPrice: Number(r.supply_price || 0),
-      retailPrice: Number(r.retail_price || 0),
-      lowestPrice: Number(r.lowest_price || 0),
-      onlinePrice: Number(r.online_price || 0),
-      livePrice: Number(r.online_price || 0),
+      brandName: toText(r.brand_name),
+      productName: toText(r.product_name),
+      productCode: toText(r.product_code),
+      stock: toNumber(r.stock),
+      supplyPrice: toNumber(r.supply_price),
+      retailPrice: toNumber(r.retail_price),
+      lowestPrice: toNumber(r.lowest_price),
+      onlinePrice: toNumber(r.online_price),
+      livePrice: toNumber(r.online_price),
+      lastModified: pickLastModified(r),
     })),
 
     setProducts: mapRows(setProductsRes.data, (r) => ({
       id: r.id,
-      setName: r.set_name || "",
-      setCode: r.set_code || "",
-      productsInside:
-        typeof r.products_inside === "string"
-          ? r.products_inside
-          : JSON.stringify(r.products_inside || ""),
+      setName: toText(r.set_name),
+      setCode: toText(r.set_code),
+      productsInside: normalizeProductsInside(r.products_inside),
+      lastModified: pickLastModified(r),
     })),
 
     setComponents: mapRows(setComponentsRes.data, (r) => ({
       id: r.id,
-      setCode: r.set_code || "",
-      productCode: r.product_code || "",
-      qtyPerSet: Number(r.qty_per_set || 0),
+      setCode: toText(r.set_code),
+      productCode: toText(r.product_code),
+      qtyPerSet: toNumber(r.qty_per_set),
+      lastModified: pickLastModified(r),
     })),
 
     orders: mapRows(ordersRes.data, (r) => ({
       id: r.id,
       createdAt: r.created_at || "",
       paidAt: r.paid_at || "",
-      status: r.status || "DRAFT",
-      sellerName: r.seller_name || r.influencer_name || "",
-      customerName: r.customer_name || "",
-      recipientName: r.recipient_name || "",
-      phone: r.phone || "",
-      country: r.country || "",
-      city: r.city || "",
-      postalCode: r.postal_code || "",
-      addressMain: r.address_main || "",
-      addressDetail: r.address_detail || "",
+      status: toText(r.status) || "DRAFT",
+      sellerName: toText(r.seller_name || r.influencer_name),
+      customerName: toText(r.customer_name),
+      recipientName: toText(r.recipient_name),
+      phone: toText(r.phone),
+      country: toText(r.country),
+      city: toText(r.city),
+      postalCode: toText(r.postal_code),
+      addressMain: toText(r.address_main),
+      addressDetail: toText(r.address_detail),
       saveAddressBook: !!r.save_address_book,
-      deliveryMemo: r.delivery_memo || "",
-      address: r.address || "",
-      shippingMethod: r.shipping_method || "택배",
-      courier: r.courier || "",
-      trackingNumber: r.tracking_number || "",
+      deliveryMemo: toText(r.delivery_memo),
+      address: toText(r.address),
+      shippingMethod: toText(r.shipping_method) || "택배",
+      courier: toText(r.courier),
+      trackingNumber: toText(r.tracking_number),
       shippedAt: r.shipped_at || "",
       deliveredAt: r.delivered_at || "",
-      notes: r.notes || "",
+      notes: toText(r.notes),
       sellerSubmitted: !!r.seller_submitted,
       sellerSubmittedAt: r.seller_submitted_at || "",
-      orderNumber: r.order_number || "",
-      orderSource: r.order_source || "",
+      orderNumber: toText(r.order_number),
+      orderSource: toText(r.order_source),
+      lastModified: pickLastModified(r),
     })).sort((a, b) => byCreatedDesc(a, b, "createdAt")),
 
     orderLines: mapRows(orderItemsRes.data, (r) => ({
       id: r.id,
-      orderId: r.order_id || "",
-      itemType: r.item_type || "PRODUCT",
-      itemCode: r.item_code || r.sku || "",
-      itemName: r.item_name || r.product_name || "",
-      sku: r.sku || "",
-      officialName: r.product_name || "",
-      brandCode: r.brand_code || "",
-      productCode: r.product_code || "",
-      matchedAlias: r.matched_alias || "",
-      matchType: r.match_type || "",
-      qty: Number(r.quantity || 0),
-      supplyPrice: Number(r.supply_price || 0),
-      salePrice: Number(r.sale_price || 0),
+      orderId: toText(r.order_id),
+      itemType: toText(r.item_type) || "PRODUCT",
+      itemCode: toText(r.item_code || r.sku),
+      itemName: toText(r.item_name || r.product_name),
+      sku: toText(r.sku),
+      officialName: toText(r.product_name),
+      brandCode: toText(r.brand_code),
+      productCode: toText(r.product_code),
+      matchedAlias: toText(r.matched_alias),
+      matchType: toText(r.match_type),
+      qty: toNumber(r.quantity),
+      supplyPrice: toNumber(r.supply_price),
+      salePrice: toNumber(r.sale_price),
       createdAt: r.created_at || "",
+      lastModified: pickLastModified(r),
     })),
   };
 }
 
 export async function replaceCatalogData(payload) {
+  ensureSupabase();
+
   const {
-    brands = [],
     catalogProducts = [],
     catalogEvents = [],
     catalogGifts = [],
@@ -227,7 +355,9 @@ export async function replaceCatalogData(payload) {
     gifts = [],
   } = payload || {};
 
-  // delete children first, then parents
+  const brands = buildBrandRows(payload);
+  const mergedGifts = Array.isArray(catalogGifts) && catalogGifts.length ? catalogGifts : gifts;
+
   const deleteTargets = [
     "products",
     "event_products",
@@ -240,16 +370,15 @@ export async function replaceCatalogData(payload) {
   ];
 
   for (const table of deleteTargets) {
-    const { error } = await supabase.from(table).delete().not("id", "is", null);
-    if (error) throw new Error(error.message || `Failed clearing ${table}`);
+    await deleteAllRows(table);
   }
 
   if (brands.length) {
     const { error } = await supabase.from("brands").insert(
       brands.map((r) => ({
         id: safeId(r.id),
-        brand_code: String(r.brandCode || "").trim(),
-        brand_name: String(r.brandName || "").trim(),
+        brand_code: toTrimmedText(r.brandCode),
+        brand_name: toTrimmedText(r.brandName),
       }))
     );
     if (error) throw new Error(error.message);
@@ -259,19 +388,19 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("products").insert(
       catalogProducts.map((r) => ({
         id: safeId(r.id),
-        brand_code: String(r.brandCode || "").trim(),
-        brand_name: String(r.brandName || "").trim(),
-        product_code: String(r.productCode || "").trim(),
-        sku: String(r.sku || "").trim(),
-        official_product_name: r.productName || "",
-        product_image: r.productImage || "",
-        advantage: r.advantage || "",
-        stock: Number(r.stock || 0),
-        supply_price: Number(r.supplyPrice || 0),
-        consumer_price: Number(r.consumerPrice || 0),
-        lowest_price: Number(r.lowestPrice || 0),
-        live_sale_price: Number(r.livePrice || 0),
-        active: r.active !== false,
+        brand_code: toTrimmedText(r.brandCode),
+        brand_name: toTrimmedText(r.brandName),
+        product_code: toTrimmedText(r.productCode),
+        sku: toTrimmedText(r.sku),
+        official_product_name: toText(r.productName),
+        product_image: toText(r.productImage),
+        advantage: toText(r.advantage),
+        stock: toNumber(r.stock),
+        supply_price: toNumber(r.supplyPrice),
+        consumer_price: toNumber(r.consumerPrice),
+        lowest_price: toNumber(r.lowestPrice),
+        live_sale_price: toNumber(r.livePrice),
+        active: toBoolActive(r.active),
       }))
     );
     if (error) throw new Error(error.message);
@@ -281,27 +410,26 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("event_products").insert(
       catalogEvents.map((r) => ({
         id: safeId(r.id),
-        event_sku: r.eventSku,
-        event_code: r.eventCode,
-        product_name: r.productName,
-        image: r.productImage || "",
-        supply_price: Number(r.supplyPrice || 0),
-        sale_price: Number(r.salePrice || 0),
-        consumer_price: Number(r.consumerPrice || 0),
-        active: r.active !== false,
+        event_sku: toText(r.eventSku),
+        event_code: toText(r.eventCode),
+        product_name: toText(r.productName),
+        image: toText(r.productImage),
+        supply_price: toNumber(r.supplyPrice),
+        sale_price: toNumber(r.salePrice),
+        consumer_price: toNumber(r.consumerPrice),
+        active: toBoolActive(r.active),
       }))
     );
     if (error) throw new Error(error.message);
   }
 
-  const mergedGifts = catalogGifts.length ? catalogGifts : gifts;
   if (mergedGifts.length) {
     const { error } = await supabase.from("gifts").insert(
       mergedGifts.map((r) => ({
         id: safeId(r.id),
-        gift_name: r.giftName,
-        gift_code: r.giftCode,
-        stock: Number(r.stock || 0),
+        gift_name: toText(r.giftName),
+        gift_code: toText(r.giftCode),
+        stock: toNumber(r.stock),
       }))
     );
     if (error) throw new Error(error.message);
@@ -311,11 +439,11 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("alias_mapping").insert(
       aliasTable.map((r) => ({
         id: safeId(r.id),
-        alias_name: r.aliasName,
-        target_type: r.targetType,
-        target_sku: r.targetSku,
-        official_name: r.officialName,
-        active: r.active !== false,
+        alias_name: toText(r.aliasName),
+        target_type: toText(r.targetType) || "PRODUCT",
+        target_sku: toText(r.targetSku),
+        official_name: toText(r.officialName),
+        active: toBoolActive(r.active),
       }))
     );
     if (error) throw new Error(error.message);
@@ -325,14 +453,14 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("main_products").insert(
       mainProducts.map((r) => ({
         id: safeId(r.id),
-        brand_name: r.brandName,
-        product_name: r.productName,
-        product_code: r.productCode,
-        stock: Number(r.stock || 0),
-        supply_price: Number(r.supplyPrice || 0),
-        retail_price: Number(r.retailPrice || 0),
-        lowest_price: Number(r.lowestPrice || 0),
-        online_price: Number(r.onlinePrice || r.livePrice || 0),
+        brand_name: toText(r.brandName),
+        product_name: toText(r.productName),
+        product_code: toText(r.productCode),
+        stock: toNumber(r.stock),
+        supply_price: toNumber(r.supplyPrice),
+        retail_price: toNumber(r.retailPrice),
+        lowest_price: toNumber(r.lowestPrice),
+        online_price: toNumber(r.onlinePrice || r.livePrice),
       }))
     );
     if (error) throw new Error(error.message);
@@ -342,9 +470,9 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("set_products").insert(
       setProducts.map((r) => ({
         id: safeId(r.id),
-        set_name: r.setName,
-        set_code: r.setCode,
-        products_inside: r.productsInside || "",
+        set_name: toText(r.setName),
+        set_code: toText(r.setCode),
+        products_inside: toText(r.productsInside),
       }))
     );
     if (error) throw new Error(error.message);
@@ -354,9 +482,9 @@ export async function replaceCatalogData(payload) {
     const { error } = await supabase.from("set_components").insert(
       setComponents.map((r) => ({
         id: safeId(r.id),
-        set_code: r.setCode,
-        product_code: r.productCode,
-        qty_per_set: Number(r.qtyPerSet || 0),
+        set_code: toText(r.setCode),
+        product_code: toText(r.productCode),
+        qty_per_set: toNumber(r.qtyPerSet),
       }))
     );
     if (error) throw new Error(error.message);
@@ -366,6 +494,8 @@ export async function replaceCatalogData(payload) {
 }
 
 export async function upsertCatalogProduct(row) {
+  ensureSupabase();
+
   await ensureBrandExists({
     brandCode: row.brandCode,
     brandName: row.brandName,
@@ -373,19 +503,19 @@ export async function upsertCatalogProduct(row) {
 
   const payload = {
     id: safeId(row.id),
-    brand_code: row.brandCode || "",
-    brand_name: row.brandName || "",
-    product_code: row.productCode || "",
-    sku: row.sku || "",
-    official_product_name: row.productName || "",
-    product_image: row.productImage || "",
-    advantage: row.advantage || "",
-    stock: Number(row.stock || 0),
-    supply_price: Number(row.supplyPrice || 0),
-    consumer_price: Number(row.consumerPrice || 0),
-    lowest_price: Number(row.lowestPrice || 0),
-    live_sale_price: Number(row.livePrice || 0),
-    active: row.active !== false,
+    brand_code: toTrimmedText(row.brandCode),
+    brand_name: toTrimmedText(row.brandName),
+    product_code: toTrimmedText(row.productCode),
+    sku: toTrimmedText(row.sku),
+    official_product_name: toText(row.productName),
+    product_image: toText(row.productImage),
+    advantage: toText(row.advantage),
+    stock: toNumber(row.stock),
+    supply_price: toNumber(row.supplyPrice),
+    consumer_price: toNumber(row.consumerPrice),
+    lowest_price: toNumber(row.lowestPrice),
+    live_sale_price: toNumber(row.livePrice),
+    active: toBoolActive(row.active),
   };
 
   const { error } = await supabase.from("products").upsert(payload);
@@ -393,21 +523,91 @@ export async function upsertCatalogProduct(row) {
 }
 
 export async function deleteCatalogProduct(id) {
+  ensureSupabase();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
-export async function upsertMainProduct(row) {
+export async function upsertEventProduct(row) {
+  ensureSupabase();
+
   const payload = {
     id: safeId(row.id),
-    brand_name: row.brandName || "",
-    product_name: row.productName || "",
-    product_code: row.productCode || "",
-    stock: Number(row.stock || 0),
-    supply_price: Number(row.supplyPrice || 0),
-    retail_price: Number(row.retailPrice || 0),
-    lowest_price: Number(row.lowestPrice || 0),
-    online_price: Number(row.onlinePrice || row.livePrice || 0),
+    event_sku: toText(row.eventSku),
+    event_code: toText(row.eventCode),
+    product_name: toText(row.productName),
+    image: toText(row.productImage),
+    supply_price: toNumber(row.supplyPrice),
+    sale_price: toNumber(row.salePrice),
+    consumer_price: toNumber(row.consumerPrice),
+    active: toBoolActive(row.active),
+  };
+
+  const { error } = await supabase.from("event_products").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteEventProduct(id) {
+  ensureSupabase();
+  const { error } = await supabase.from("event_products").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function upsertGift(row) {
+  ensureSupabase();
+
+  const payload = {
+    id: safeId(row.id),
+    gift_name: toText(row.giftName),
+    gift_code: toText(row.giftCode),
+    stock: toNumber(row.stock),
+  };
+
+  const { error } = await supabase.from("gifts").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteGift(id) {
+  ensureSupabase();
+  const { error } = await supabase.from("gifts").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function upsertAliasMapping(row) {
+  ensureSupabase();
+
+  const payload = {
+    id: safeId(row.id),
+    alias_name: toText(row.aliasName),
+    target_type: toText(row.targetType) || "PRODUCT",
+    target_sku: toText(row.targetSku),
+    official_name: toText(row.officialName),
+    active: toBoolActive(row.active),
+  };
+
+  const { error } = await supabase.from("alias_mapping").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteAliasMapping(id) {
+  ensureSupabase();
+  const { error } = await supabase.from("alias_mapping").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function upsertMainProduct(row) {
+  ensureSupabase();
+
+  const payload = {
+    id: safeId(row.id),
+    brand_name: toText(row.brandName),
+    product_name: toText(row.productName),
+    product_code: toText(row.productCode),
+    stock: toNumber(row.stock),
+    supply_price: toNumber(row.supplyPrice),
+    retail_price: toNumber(row.retailPrice),
+    lowest_price: toNumber(row.lowestPrice),
+    online_price: toNumber(row.onlinePrice || row.livePrice),
   };
 
   const { error } = await supabase.from("main_products").upsert(payload);
@@ -415,36 +615,79 @@ export async function upsertMainProduct(row) {
 }
 
 export async function deleteMainProduct(id) {
+  ensureSupabase();
   const { error } = await supabase.from("main_products").delete().eq("id", id);
   if (error) throw new Error(error.message);
 }
 
+export async function upsertSetProduct(row) {
+  ensureSupabase();
+
+  const payload = {
+    id: safeId(row.id),
+    set_name: toText(row.setName),
+    set_code: toText(row.setCode),
+    products_inside: toText(row.productsInside),
+  };
+
+  const { error } = await supabase.from("set_products").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteSetProduct(id) {
+  ensureSupabase();
+  const { error } = await supabase.from("set_products").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export async function upsertSetComponent(row) {
+  ensureSupabase();
+
+  const payload = {
+    id: safeId(row.id),
+    set_code: toText(row.setCode),
+    product_code: toText(row.productCode),
+    qty_per_set: toNumber(row.qtyPerSet),
+  };
+
+  const { error } = await supabase.from("set_components").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteSetComponent(id) {
+  ensureSupabase();
+  const { error } = await supabase.from("set_components").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function upsertOrder(order) {
+  ensureSupabase();
+
   const payload = {
     id: safeId(order.id),
     order_number: order.orderNumber || order.id,
-    influencer_name: order.sellerName || "",
-    seller_name: order.sellerName || "",
-    order_source: order.orderSource || "WEB",
-    status: order.status || "DRAFT",
-    customer_name: order.customerName || "",
-    recipient_name: order.recipientName || "",
-    phone: order.phone || "",
-    country: order.country || "",
-    city: order.city || "",
-    postal_code: order.postalCode || "",
-    address_main: order.addressMain || "",
-    address_detail: order.addressDetail || "",
+    influencer_name: toText(order.sellerName),
+    seller_name: toText(order.sellerName),
+    order_source: toText(order.orderSource) || "WEB",
+    status: toText(order.status) || "DRAFT",
+    customer_name: toText(order.customerName),
+    recipient_name: toText(order.recipientName),
+    phone: toText(order.phone),
+    country: toText(order.country),
+    city: toText(order.city),
+    postal_code: toText(order.postalCode),
+    address_main: toText(order.addressMain),
+    address_detail: toText(order.addressDetail),
     save_address_book: !!order.saveAddressBook,
-    delivery_memo: order.deliveryMemo || "",
-    address: order.address || "",
-    shipping_method: order.shippingMethod || "택배",
-    courier: order.courier || "",
-    tracking_number: order.trackingNumber || "",
+    delivery_memo: toText(order.deliveryMemo),
+    address: toText(order.address),
+    shipping_method: toText(order.shippingMethod) || "택배",
+    courier: toText(order.courier),
+    tracking_number: toText(order.trackingNumber),
     paid_at: order.paidAt || null,
     shipped_at: order.shippedAt || null,
     delivered_at: order.deliveredAt || null,
-    notes: order.notes || "",
+    notes: toText(order.notes),
     seller_submitted: !!order.sellerSubmitted,
     seller_submitted_at: order.sellerSubmittedAt || null,
     created_at: order.createdAt || new Date().toISOString(),
@@ -455,6 +698,8 @@ export async function upsertOrder(order) {
 }
 
 export async function deleteOrderWithItems(orderId) {
+  ensureSupabase();
+
   const itemsRes = await supabase.from("order_items").delete().eq("order_id", orderId);
   if (itemsRes.error) throw new Error(itemsRes.error.message);
 
@@ -463,29 +708,58 @@ export async function deleteOrderWithItems(orderId) {
 }
 
 export async function replaceOrderItems(orderId, items) {
+  ensureSupabase();
+
   const del = await supabase.from("order_items").delete().eq("order_id", orderId);
   if (del.error) throw new Error(del.error.message);
 
-  if (!items.length) return;
+  if (!Array.isArray(items) || items.length === 0) return;
 
   const insertRows = items.map((r) => ({
     id: safeId(r.id),
     order_id: orderId,
-    item_type: r.itemType || "PRODUCT",
-    item_code: r.itemCode || r.sku || "",
-    item_name: r.itemName || r.officialName || "",
-    sku: r.sku || "",
-    product_name: r.officialName || r.itemName || "",
-    product_code: r.productCode || "",
-    brand_code: r.brandCode || "",
-    matched_alias: r.matchedAlias || "",
-    match_type: r.matchType || "",
-    quantity: Number(r.qty || 0),
-    supply_price: Number(r.supplyPrice || 0),
-    sale_price: Number(r.salePrice || 0),
+    item_type: toText(r.itemType) || "PRODUCT",
+    item_code: toText(r.itemCode || r.sku),
+    item_name: toText(r.itemName || r.officialName),
+    sku: toText(r.sku),
+    product_name: toText(r.officialName || r.itemName),
+    product_code: toText(r.productCode),
+    brand_code: toText(r.brandCode),
+    matched_alias: toText(r.matchedAlias),
+    match_type: toText(r.matchType),
+    quantity: toNumber(r.qty),
+    supply_price: toNumber(r.supplyPrice),
+    sale_price: toNumber(r.salePrice),
     created_at: r.createdAt || new Date().toISOString(),
   }));
 
   const ins = await supabase.from("order_items").insert(insertRows);
   if (ins.error) throw new Error(ins.error.message);
+}
+
+export async function clearOrdersOnly() {
+  ensureSupabase();
+  await deleteAllRows("order_items");
+  await deleteAllRows("orders");
+}
+
+export async function resetAllAppData() {
+  ensureSupabase();
+
+  const deleteTargets = [
+    "order_items",
+    "orders",
+    "products",
+    "event_products",
+    "gifts",
+    "alias_mapping",
+    "main_products",
+    "set_components",
+    "set_products",
+    "brands",
+  ];
+
+  for (const table of deleteTargets) {
+    await deleteAllRows(table);
+  }
 }

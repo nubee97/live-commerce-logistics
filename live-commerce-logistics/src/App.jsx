@@ -20,53 +20,6 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* <header className="topbar">
-        <div className="brand" style={{ cursor: "pointer" }} onClick={() => nav("/")}>
-          <div className="logo">LC</div>
-          <div>
-            <div className="title">Live Commerce Logistics</div>
-            <div className="subtitle">Dashboard • Influencers • Orders • Packing</div>
-          </div>
-        </div>
-
-        <nav className="nav">
-          {!session.role && (
-            <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>
-              Home
-            </NavLink>
-          )}
-
-          {session.role === "admin" && (
-            <>
-              <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
-                Dashboard
-              </NavLink>
-              <NavLink to="/influencers" className={({ isActive }) => (isActive ? "active" : "")}>
-                Influencers
-              </NavLink>
-              <NavLink to="/order-list" className={({ isActive }) => (isActive ? "active" : "")}>
-                Order List
-              </NavLink>
-              <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
-                Influencer/Seller
-              </NavLink>
-            </>
-          )}
-
-          {session.role === "influencer" && (
-            <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
-              Influencer/Seller
-            </NavLink>
-          )}
-
-          {session.role && (
-            <button className="btn danger" style={{ marginLeft: 10 }} onClick={logout} type="button">
-              Logout
-            </button>
-          )}
-        </nav>
-      </header> */}
-
       <main className="main">
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -117,46 +70,12 @@ export default function App() {
     </ProtectedRoute>
   }
 />
-          {/* <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allow="admin">
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/influencers"
-            element={
-              <ProtectedRoute allow="admin">
-                <Influencers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/order-list"
-            element={
-              <ProtectedRoute allow="admin">
-                <OrderList />
-              </ProtectedRoute>
-            }
-          /> */}
+
           <Route
             path="/packing/:orderId"
             element={
               <ProtectedRoute allow="admin">
                 <Packing />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Influencer-only page */}
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute allow={session.role === "admin" ? "admin" : "influencer"}>
-                <Orders />
               </ProtectedRoute>
             }
           />

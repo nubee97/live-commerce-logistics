@@ -865,6 +865,20 @@ td { font-size: 13px; }
   gap: 8px;
   flex-wrap: wrap;
 }
+.expandArrow {
+  display: inline-block;
+  width: 14px;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.orderedSummaryRow div div {
+  line-height: 1.6;
+}
+.inputError{
+border:2px solid #ff4d4f !important;
+background:#fff5f5;
+}
 
 .ordersPanelHeader {
   display: flex;
