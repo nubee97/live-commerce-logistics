@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../data/StoreProvider.jsx";
+import PageHeader from "../components/PageHeader.jsx";
+import MetricCard from "../components/MetricCard.jsx";
 import { computePickList, computeGiftList } from "../lib/inventory.js";
 
 function downloadFile(filename, content, mime = "text/plain;charset=utf-8") {
-  // const blob = new Blob([content], { type: mime });
   const blob = new Blob(["\ufeff", content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -30,21 +31,66 @@ function endOfDayIso(yyyyMmDd) {
   return new Date(`${yyyyMmDd}T23:59:59.999`).toISOString();
 }
 
+function formatDateTime(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("ko-KR");
+}
+
+function statusMeta(status) {
+  const value = String(status || "DRAFT").toUpperCase();
+  if (value === "CONFIRMED") {
+    return { label: "발주확인", className: "confirmed" };
+  }
+  if (value === "PACKED") {
+    return { label: "배송중", className: "packed" };
+  }
+  if (value === "SHIPPED") {
+    return { label: "배송완료", className: "shipped" };
+  }
+  return { label: "신규주문", className: "draft" };
+}
+
+function summarizeOrderLine(lines) {
+  const safeLines = Array.isArray(lines) ? lines : [];
+  if (safeLines.length === 0) {
+    return "상품 없음";
+  }
+
+  const primary = safeLines[0];
+  const primaryName = primary.officialName || primary.itemName || primary.productName || "상품명 없음";
+
+  if (safeLines.length === 1) {
+    return primaryName;
+  }
+
+  return `${primaryName} 외 ${safeLines.length - 1}건`;
+}
+
 export default function OrderList() {
   const { state } = useStore();
   const nav = useNavigate();
 
   const [expanded, setExpanded] = useState({});
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("ALL"); // ALL | DRAFT | CONFIRMED
+  const [status, setStatus] = useState("ALL");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
+  const metrics = useMemo(() => {
+    const orders = state.orders || [];
+    return {
+      total: orders.length,
+      draft: orders.filter((o) => (o.status || "DRAFT") === "DRAFT").length,
+      confirmed: orders.filter((o) => (o.status || "") === "CONFIRMED").length,
+      packed: orders.filter((o) => (o.status || "") === "PACKED").length,
+      shipped: orders.filter((o) => (o.status || "") === "SHIPPED").length,
+    };
+  }, [state.orders]);
+
   const ordersFiltered = useMemo(() => {
     let list = [...(state.orders || [])];
-
-    const allowedStatuses = ["", "CONFIRMED"];
-    list = list.filter((o) => allowedStatuses.includes(o.status || "DRAFT"));
 
     if (status !== "ALL") {
       list = list.filter((o) => (o.status || "DRAFT") === status);
@@ -70,14 +116,18 @@ export default function OrderList() {
     const query = q.trim().toLowerCase();
     if (query) {
       list = list.filter((o) => {
-        const customer = (o.customerName || "").toLowerCase();
-        const seller = (o.sellerName || "").toLowerCase();
-        const phone = (o.phone || "").toLowerCase();
-        return (
-          customer.includes(query) ||
-          seller.includes(query) ||
-          phone.includes(query)
-        );
+        const haystack = [
+          o.customerName,
+          o.sellerName,
+          o.phone,
+          o.recipientName,
+          o.addressMain,
+          o.addressDetail,
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
       });
     }
 
@@ -111,373 +161,408 @@ export default function OrderList() {
     setToDate("");
   }
 
-function saveOrderCsv(order) {
-  const pick = computePickList(state, order.id);
-  const gifts = computeGiftList(state, order.id);
+  function saveOrderCsv(order) {
+    const pick = computePickList(state, order.id);
+    const gifts = computeGiftList(state, order.id);
 
-  const confirmedTime = order.sellerSubmittedAt
-    ? new Date(order.sellerSubmittedAt).toLocaleString()
-    : "-";
+    const confirmedTime = order.sellerSubmittedAt
+      ? new Date(order.sellerSubmittedAt).toLocaleString()
+      : "-";
 
-  const shippingAddress = [
-    order.postalCode || "",
-    order.addressMain || "",
-    order.addressDetail || "",
-  ]
-    .filter(Boolean)
-    .join(" / ");
+    const shippingAddress = [order.postalCode || "", order.addressMain || "", order.addressDetail || ""]
+      .filter(Boolean)
+      .join(" / ");
 
-  const baseColumns = {
-    OrderId: order.id || "-",
-    Seller: order.sellerName || "-",
-    Customer: order.customerName || "-",
-    Phone: order.phone || "-",
-    Address: shippingAddress || "-",
-    Shipping: order.shippingMethod || "-",
-    Status: order.status || "DRAFT",
-    ConfirmedAt: confirmedTime,
-    CustomerDetailsCombined: order.address || "-",
-  };
+    const baseColumns = {
+      OrderId: order.id || "-",
+      Seller: order.sellerName || "-",
+      Customer: order.customerName || "-",
+      Phone: order.phone || "-",
+      Address: shippingAddress || "-",
+      Shipping: order.shippingMethod || "-",
+      Status: order.status || "DRAFT",
+      ConfirmedAt: confirmedTime,
+      CustomerDetailsCombined: order.address || "-",
+    };
 
-  const rows = [];
+    const rows = [];
 
-  if (pick.length > 0) {
-    pick.forEach((r) => {
+    if (pick.length > 0) {
+      pick.forEach((r) => {
+        rows.push({
+          ...baseColumns,
+          RowType: "PICK",
+          ProductCode: r.productCode || "-",
+          ProductName: r.productName || "-",
+          PickQuantity: r.qty ?? 0,
+          GiftCode: "",
+          GiftName: "",
+          GiftQuantity: "",
+        });
+      });
+    }
+
+    if (gifts.length > 0) {
+      gifts.forEach((r) => {
+        rows.push({
+          ...baseColumns,
+          RowType: "GIFT",
+          ProductCode: "",
+          ProductName: "",
+          PickQuantity: "",
+          GiftCode: r.giftCode || "-",
+          GiftName: r.giftName || "-",
+          GiftQuantity: r.qty ?? 0,
+        });
+      });
+    }
+
+    if (rows.length === 0) {
       rows.push({
         ...baseColumns,
-        RowType: "PICK",
-        ProductCode: r.productCode || "-",
-        ProductName: r.productName || "-",
-        PickQuantity: r.qty ?? 0,
+        RowType: "ORDER",
+        ProductCode: "",
+        ProductName: "",
+        PickQuantity: "",
         GiftCode: "",
         GiftName: "",
         GiftQuantity: "",
       });
-    });
+    }
+
+    const headers = [
+      "OrderId",
+      "Seller",
+      "Customer",
+      "Phone",
+      "Address",
+      "Shipping",
+      "Status",
+      "ConfirmedAt",
+      "CustomerDetailsCombined",
+      "RowType",
+      "ProductCode",
+      "ProductName",
+      "PickQuantity",
+      "GiftCode",
+      "GiftName",
+      "GiftQuantity",
+    ];
+
+    const csvLines = [headers.join(","), ...rows.map((row) => headers.map((h) => escapeCsv(row[h])).join(","))];
+
+    const safeName = (order.customerName || "Customer").replace(/[^\w\-]+/g, "_");
+    const filename = `Order_${safeName}_${order.id.slice(0, 6)}.csv`;
+
+    downloadFile(filename, csvLines.join("\n"), "text/csv;charset=utf-8");
   }
 
-  if (gifts.length > 0) {
-    gifts.forEach((r) => {
-      rows.push({
-        ...baseColumns,
-        RowType: "GIFT",
-        ProductCode: "",
-        ProductName: "",
-        PickQuantity: "",
-        GiftCode: r.giftCode || "-",
-        GiftName: r.giftName || "-",
-        GiftQuantity: r.qty ?? 0,
-      });
-    });
-  }
-
-  if (rows.length === 0) {
-    rows.push({
-      ...baseColumns,
-      RowType: "ORDER",
-      ProductCode: "",
-      ProductName: "",
-      PickQuantity: "",
-      GiftCode: "",
-      GiftName: "",
-      GiftQuantity: "",
-    });
-  }
-
-  const headers = [
-    "OrderId",
-    "Seller",
-    "Customer",
-    "Phone",
-    "Address",
-    "Shipping",
-    "Status",
-    "ConfirmedAt",
-    "CustomerDetailsCombined",
-    "RowType",
-    "ProductCode",
-    "ProductName",
-    "PickQuantity",
-    "GiftCode",
-    "GiftName",
-    "GiftQuantity",
+  const metricCards = [
+    { label: "전체 주문", value: metrics.total, hint: "All orders", tone: "default" },
+    { label: "신규주문", value: metrics.draft, hint: "Draft", tone: "info" },
+    { label: "발주확인", value: metrics.confirmed, hint: "Confirmed", tone: "success" },
+    { label: "배송중", value: metrics.packed, hint: "Packed", tone: "warn" },
+    { label: "배송완료", value: metrics.shipped, hint: "Shipped", tone: "default" },
   ];
-
-  const csvLines = [
-    headers.join(","),
-    ...rows.map((row) => headers.map((h) => escapeCsv(row[h])).join(",")),
-  ];
-
-  const safeName = (order.customerName || "Customer").replace(/[^\w\-]+/g, "_");
-  const filename = `Order_${safeName}_${order.id.slice(0, 6)}.csv`;
-
-  downloadFile(filename, csvLines.join("\n"), "text/csv;charset=utf-8");
-}
 
   return (
-    <div className="card">
-      <div className="row" style={{ alignItems: "flex-end" }}>
-        <div>
-          <h1 className="h1">Order List</h1>
-          <p className="p">
-            Search + filter by draft or confirmed orders. Expand for details, Save CSV per order.
-          </p>
-        </div>
+    <div className="orderBoardPage">
+      <PageHeader
+        kicker="주문통합검색 · Order Center"
+        title="Confirmed & Searchable Order List"
+        subtitle="Inspired by your Korean Excel operations sheet: date filters first, then seller/customer search, then row-by-row operational actions like packing and CSV export."
+        actions={
+          <>
+            <button className="btn secondary" onClick={() => nav("/dashboard")} type="button">
+              Back to Dashboard
+            </button>
+            <button className="btn" onClick={expandAll} type="button">
+              Expand All
+            </button>
+            <button className="btn" onClick={collapseAll} type="button">
+              Collapse All
+            </button>
+          </>
+        }
+      />
 
-        <div
-          className="noPrint"
-          style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}
-        >
-          <button className="btn" onClick={() => nav("/dashboard")} type="button">
-            Back to Dashboard
-          </button>
-          <button className="btn" onClick={expandAll} type="button">
-            Expand All
-          </button>
-          <button className="btn" onClick={collapseAll} type="button">
-            Collapse All
-          </button>
-        </div>
+      <div className="metricsGrid orderMetricsGrid">
+        {metricCards.map((metric) => (
+          <MetricCard
+            key={metric.label}
+            label={metric.label}
+            value={metric.value}
+            hint={metric.hint}
+            tone={metric.tone}
+          />
+        ))}
       </div>
 
-      <div className="hr" />
-
-      <div className="card noPrint" style={{ background: "rgba(255,255,255,0.03)" }}>
-        <div className="row">
+      <div className="dashboardSection filterBoardCard noPrint">
+        <div className="sectionTopRow">
           <div>
-            <div className="label">Search (Customer / Seller / Phone)</div>
+            <div className="sectionTitle">조회조건</div>
+            <div className="sectionSubtitle">Search by date, status, seller, customer, recipient, or phone number.</div>
+          </div>
+          <div className="sectionMetaBadge">Results {ordersFiltered.length}</div>
+        </div>
+
+        <div className="filterBoardGrid">
+          <div className="filterField wide">
+            <label className="label">검색어 (셀러명 / 고객명 / 연락처 / 주소)</label>
             <input
               className="input"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="e.g. Pascal, Chisom, 010..."
+              placeholder="예: Pascal, User1, 010-1234-5678, 성동구"
             />
           </div>
 
-          <div>
-            <div className="label">Order Status</div>
-            <select
-              className="select"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-            >
-              <option value="ALL">ALL</option>
-              <option value="CONFIRMED">CONFIRMED</option>
+          <div className="filterField">
+            <label className="label">주문상태</label>
+            <select className="select" value={status} onChange={(e) => setStatus(e.target.value)}>
+              <option value="ALL">전체</option>
+              <option value="DRAFT">신규주문</option>
+              <option value="CONFIRMED">발주확인</option>
+              <option value="PACKED">배송중</option>
+              <option value="SHIPPED">배송완료</option>
             </select>
           </div>
 
-          {/* <div>
-            <div className="label">Confirmed / Created From</div>
-            <input
-              className="input"
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
-          </div> */}
+          <div className="filterField">
+            <label className="label">조회 시작일</label>
+            <input className="input" type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          </div>
 
-          <div>
-            <div className="label">Confirmed / Created To</div>
-            <input
-              className="input"
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-            />
+          <div className="filterField">
+            <label className="label">조회 종료일</label>
+            <input className="input" type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
           </div>
         </div>
 
         <div className="toolbar" style={{ marginBottom: 0 }}>
-          <div className="chip">Results: {ordersFiltered.length}</div>
+          <div className="filterHintRow">
+            <span className="chip">엑셀 기준 컬럼: 주문일 / 배송속성 / 주문상태 / 상품명 / 셀러명 / 수취인명</span>
+          </div>
           <button className="btn" onClick={clearFilters} type="button">
             Clear Filters
           </button>
         </div>
       </div>
 
-      <div className="hr" />
-
       {ordersFiltered.length === 0 ? (
-        <div className="small">No results. Try clearing filters or confirming an order first.</div>
+        <div className="dashboardSection emptyStatePanel">
+          <div className="sectionTitle">No orders found</div>
+          <div className="sectionSubtitle">Try clearing filters or submitting an order first.</div>
+        </div>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div className="orderCardList">
           {ordersFiltered.map((order) => {
             const isOpen = !!expanded[order.id];
-            const confirmedTime = order.sellerSubmittedAt
-              ? new Date(order.sellerSubmittedAt).toLocaleString()
-              : "-";
-            const cc = `${order.country || "-"} / ${order.city || "-"}`;
-
-            const pickCount = computePickList(state, order.id).reduce(
-              (sum, r) => sum + (Number(r.qty) || 0),
-              0
+            const meta = statusMeta(order.status);
+            const confirmedTime = formatDateTime(order.sellerSubmittedAt || order.paidAt || order.createdAt);
+            const lines = (state.orderLines || []).filter((line) => line.orderId === order.id);
+            const lineSummary = summarizeOrderLine(lines);
+            const pickRows = computePickList(state, order.id).slice().sort((a, b) =>
+              (a.productName || "").localeCompare(b.productName || "", "ko")
             );
-            const giftCount = computeGiftList(state, order.id).reduce(
-              (sum, r) => sum + (Number(r.qty) || 0),
-              0
-            );
+            const giftRows = computeGiftList(state, order.id);
+            const pickCount = pickRows.reduce((sum, r) => sum + (Number(r.qty) || 0), 0);
+            const giftCount = giftRows.reduce((sum, r) => sum + (Number(r.qty) || 0), 0);
+            const shippingAddress = [order.postalCode, order.addressMain, order.addressDetail]
+              .filter(Boolean)
+              .join(" ");
 
             return (
-              <div key={order.id} className="subcard">
-                <div className="row" style={{ alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontWeight: 900, fontSize: 16 }}>
-                      {order.customerName || "(No customer)"}{" "}
-                      <span className="small">• Seller: {order.sellerName || "-"}</span>
+              <div key={order.id} className={`orderOpsCard ${isOpen ? "open" : ""}`}>
+                <div className="orderOpsTop">
+                  <div className="orderOpsIdentity">
+                    <div className="orderOpsTitleRow">
+                      <h3>{order.customerName || order.recipientName || "(No customer)"}</h3>
+                      <span className={`statusBadge ${meta.className}`}>{meta.label}</span>
                     </div>
-
-                    <div className="small" style={{ marginTop: 4 }}>
-                      Confirmed Time: {confirmedTime} • Status: {order.status || "DRAFT"} • {cc} • Pick {pickCount} • Gifts {giftCount}
+                    <div className="orderOpsMetaLine">
+                      <span>주문일 {formatDateTime(order.createdAt)}</span>
+                      <span>발주확인일 {confirmedTime}</span>
+                      <span>셀러 {order.sellerName || "-"}</span>
                     </div>
+                    <div className="orderOpsSummary">대표 상품: {lineSummary}</div>
                   </div>
 
-                  <div
-                    className="noPrint"
-                    style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}
-                  >
+                  <div className="orderOpsActions noPrint">
                     <button className="btn" onClick={() => toggle(order.id)} type="button">
                       {isOpen ? "Collapse" : "Expand"}
                     </button>
-
                     <button className="btn" onClick={() => saveOrderCsv(order)} type="button">
                       Save CSV
                     </button>
-
                     {(order.status || "DRAFT") === "CONFIRMED" && (
-                      <button
-                        className="btn primary"
-                        onClick={() => nav(`/packing/${order.id}`)}
-                        type="button"
-                      >
+                      <button className="btn primary" onClick={() => nav(`/packing/${order.id}`)} type="button">
                         Packing List
                       </button>
                     )}
                   </div>
                 </div>
 
-                {!isOpen && (
-                  <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <div className="chip">Customer: {order.customerName || "-"}</div>
-                    <div className="chip">Phone: {order.phone || "-"}</div>
-                    <div className="chip">Shipping: {order.shippingMethod || "-"}</div>
-                    <div className="chip">Pick: {pickCount}</div>
-                    <div className="chip">Gifts: {giftCount}</div>
-                  </div>
-                )}
+                <div className="orderOpsChipRow">
+                  <span className="chip">배송속성: {order.shippingMethod || "-"}</span>
+                  <span className="chip">수량: Pick {pickCount}</span>
+                  <span className="chip">사은품: {giftCount}</span>
+                  <span className="chip">수취인: {order.recipientName || order.customerName || "-"}</span>
+                  <span className="chip">연락처: {order.phone || "-"}</span>
+                  <span className="chip">주소: {shippingAddress || order.address || "-"}</span>
+                </div>
 
                 {isOpen && (
                   <>
                     <div className="hr" />
 
-                    <div className="grid2">
-                      <div>
-                        <div className="label">Seller Name</div>
-                        <div className="chip">{order.sellerName || "-"}</div>
+                    <div className="orderDetailGrid">
+                      <div className="detailPanel">
+                        <div className="detailPanelTitle">주문 정보</div>
+                        <div className="detailInfoGrid">
+                          <div>
+                            <div className="label">주문번호</div>
+                            <div className="detailValue">{order.orderNumber || order.id}</div>
+                          </div>
+                          <div>
+                            <div className="label">주문상태</div>
+                            <div className="detailValue">{meta.label}</div>
+                          </div>
+                          <div>
+                            <div className="label">셀러명</div>
+                            <div className="detailValue">{order.sellerName || "-"}</div>
+                          </div>
+                          <div>
+                            <div className="label">배송속성</div>
+                            <div className="detailValue">{order.shippingMethod || "-"}</div>
+                          </div>
+                          <div>
+                            <div className="label">수취인명</div>
+                            <div className="detailValue">{order.recipientName || order.customerName || "-"}</div>
+                          </div>
+                          <div>
+                            <div className="label">연락처</div>
+                            <div className="detailValue">{order.phone || "-"}</div>
+                          </div>
+                        </div>
                       </div>
 
-                      <div>
-                        <div className="label">Shipping Method</div>
-                        <div className="chip">{order.shippingMethod || "-"}</div>
-                      </div>
-
-                      <div>
-                        <div className="label">Customer</div>
-                        <div className="chip">{order.customerName || "-"}</div>
-                      </div>
-
-                      <div>
-                        <div className="label">Phone</div>
-                        <div className="chip">{order.phone || "-"}</div>
-                      </div>
-
-                      <div>
-                        <div className="label">Country / City</div>
-                        <div className="chip">{cc}</div>
-                      </div>
-
-                      <div>
-                        <div className="label">Status</div>
-                        <div className="chip">{order.status || "DRAFT"}</div>
-                      </div>
-
-                      <div>
-                        <div className="label">Order Confirmed At</div>
-                        <div className="chip">{confirmedTime}</div>
-                      </div>
-
-                      <div style={{ gridColumn: "1 / -1" }}>
-                        <div className="label">Customer Details (Address)</div>
-                        <div
-                          className="card"
-                          style={{ padding: 12, background: "rgba(255,255,255,0.04)" }}
-                        >
-                          <div style={{ whiteSpace: "pre-wrap" }}>{order.address || "-"}</div>
+                      <div className="detailPanel">
+                        <div className="detailPanelTitle">배송 정보</div>
+                        <div className="detailInfoGrid">
+                          <div>
+                            <div className="label">우편번호</div>
+                            <div className="detailValue">{order.postalCode || "-"}</div>
+                          </div>
+                          <div>
+                            <div className="label">택배사</div>
+                            <div className="detailValue">{order.courier || "-"}</div>
+                          </div>
+                          <div style={{ gridColumn: "1 / -1" }}>
+                            <div className="label">주소</div>
+                            <div className="detailValue multiline">{shippingAddress || order.address || "-"}</div>
+                          </div>
+                          <div style={{ gridColumn: "1 / -1" }}>
+                            <div className="label">배송메모</div>
+                            <div className="detailValue multiline">{order.deliveryMemo || "-"}</div>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="hr" />
-
-                    <h2 className="h1" style={{ fontSize: 16, marginBottom: 8 }}>
-                      Pick List (Warehouse)
-                    </h2>
-                    <div className="tableWrap">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Product Code</th>
-                            <th>Product Name</th>
-                            <th className="right">Quantity</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            const pick = computePickList(state, order.id)
-                              .slice()
-                              .sort((a, b) => (a.productName || "").localeCompare(b.productName || ""));
-                            if (pick.length === 0) {
-                              return <tr><td colSpan="3" className="small">No items.</td></tr>;
-                            }
-                            return pick.map((r) => (
-                              <tr key={r.productCode}>
-                                <td>{r.productCode}</td>
-                                <td>{r.productName}</td>
-                                <td className="right" style={{ fontWeight: 800 }}>{r.qty}</td>
+                    <div className="orderTablesGrid">
+                      <div className="detailPanel">
+                        <div className="detailPanelTitle">주문 품목</div>
+                        <div className="tableWrap compact">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>유형</th>
+                                <th>상품명</th>
+                                <th>코드</th>
+                                <th className="right">수량</th>
                               </tr>
-                            ));
-                          })()}
-                        </tbody>
-                      </table>
+                            </thead>
+                            <tbody>
+                              {lines.length === 0 ? (
+                                <tr>
+                                  <td colSpan="4" className="small">등록된 품목이 없습니다.</td>
+                                </tr>
+                              ) : (
+                                lines.map((line) => (
+                                  <tr key={line.id}>
+                                    <td>{line.itemType || "PRODUCT"}</td>
+                                    <td>{line.officialName || line.itemName || "-"}</td>
+                                    <td>{line.sku || line.itemCode || line.productCode || "-"}</td>
+                                    <td className="right">{line.qty || 0}</td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div className="detailPanel">
+                        <div className="detailPanelTitle">창고 Pick List</div>
+                        <div className="tableWrap compact">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>상품코드</th>
+                                <th>상품명</th>
+                                <th className="right">수량</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {pickRows.length === 0 ? (
+                                <tr>
+                                  <td colSpan="3" className="small">No items.</td>
+                                </tr>
+                              ) : (
+                                pickRows.map((row) => (
+                                  <tr key={row.productCode}>
+                                    <td>{row.productCode}</td>
+                                    <td>{row.productName}</td>
+                                    <td className="right">{row.qty}</td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="hr" />
-
-                    <h2 className="h1" style={{ fontSize: 16, marginBottom: 8 }}>Gifts</h2>
-                    <div className="tableWrap">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Gift Code</th>
-                            <th>Gift Name</th>
-                            <th className="right">Quantity</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            const gifts = computeGiftList(state, order.id);
-                            if (gifts.length === 0) {
-                              return <tr><td colSpan="3" className="small">No gifts for this order.</td></tr>;
-                            }
-                            return gifts.map((r) => (
-                              <tr key={r.giftCode}>
-                                <td>{r.giftCode}</td>
-                                <td>{r.giftName}</td>
-                                <td className="right" style={{ fontWeight: 800 }}>{r.qty}</td>
+                    <div className="detailPanel giftPanel">
+                      <div className="detailPanelTitle">사은품</div>
+                      <div className="tableWrap compact">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>사은품 코드</th>
+                              <th>사은품명</th>
+                              <th className="right">수량</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {giftRows.length === 0 ? (
+                              <tr>
+                                <td colSpan="3" className="small">No gifts for this order.</td>
                               </tr>
-                            ));
-                          })()}
-                        </tbody>
-                      </table>
+                            ) : (
+                              giftRows.map((row) => (
+                                <tr key={row.giftCode}>
+                                  <td>{row.giftCode}</td>
+                                  <td>{row.giftName}</td>
+                                  <td className="right">{row.qty}</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </>
                 )}

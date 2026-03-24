@@ -1483,3 +1483,563 @@ background:#fff5f5;
     align-items: flex-start;
   }
 }
+/* ===== UI Refresh: shared layout overrides ===== */
+.main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.shell {
+  grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.shellContent {
+  padding: 24px 28px 32px;
+}
+
+.sidebarPro {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: 100vh;
+  padding: 24px 18px;
+  background:
+    linear-gradient(180deg, rgba(8,16,24,0.98), rgba(4,10,16,0.98)),
+    radial-gradient(circle at top left, rgba(37,99,235,0.18), transparent 28%);
+}
+
+.sidebarNav {
+  gap: 10px;
+}
+
+.sidebarLink {
+  display: grid;
+  gap: 4px;
+  padding: 13px 14px;
+}
+
+.sidebarLinkTitle {
+  font-weight: 700;
+  color: inherit;
+}
+
+.sidebarLinkMeta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sidebarLink.active .sidebarLinkMeta,
+.sidebarLink:hover .sidebarLinkMeta {
+  color: rgba(233, 238, 246, 0.82);
+}
+
+.topbarPro {
+  padding: 18px 28px;
+  background: rgba(5, 10, 16, 0.86);
+}
+
+.topbarEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(113, 196, 255, 0.78);
+  margin-bottom: 6px;
+}
+
+.topbarRoleWrap {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.topbarUserId {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pageHeaderKicker {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(113, 196, 255, 0.82);
+  margin-bottom: 8px;
+}
+
+.pageHeaderTitle {
+  font-size: clamp(28px, 4vw, 38px);
+}
+
+.pageHeaderActions {
+  justify-content: flex-end;
+}
+
+.metricsGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.metricCard {
+  min-height: 116px;
+}
+
+.dashboardHeroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.9fr);
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.dashboardHeroCard {
+  border-radius: 24px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+    radial-gradient(circle at top right, rgba(37,99,235,0.18), transparent 25%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 22px 50px rgba(0,0,0,0.22);
+}
+
+.dashboardHeroCard.compact {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.025)),
+    radial-gradient(circle at top right, rgba(16,185,129,0.14), transparent 30%);
+}
+
+.dashboardHeroKicker {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(113, 196, 255, 0.82);
+  margin-bottom: 10px;
+}
+
+.dashboardHeroCard h2 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.dashboardHeroCard p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.dashboardSummaryPills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.summaryPill {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--muted);
+}
+
+.summaryPill strong {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.dashboardChecklist {
+  padding-left: 18px;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.sectionMetaBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tabRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tabChip {
+  display: grid;
+  gap: 3px;
+  min-width: 148px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  cursor: pointer;
+  transition: 0.18s ease;
+  text-align: left;
+}
+
+.tabChip small {
+  color: var(--muted);
+}
+
+.tabChip:hover,
+.tabChip.active {
+  background: rgba(37,99,235,0.12);
+  border-color: rgba(37,99,235,0.28);
+  box-shadow: inset 0 0 0 1px rgba(37,99,235,0.12);
+}
+
+.inventorySectionCard {
+  overflow: hidden;
+}
+
+.statusDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.statusDot.good {
+  color: #86efac;
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.26);
+}
+
+.statusDot.muted {
+  color: var(--muted);
+}
+
+.editableTablePro th,
+.editableTablePro td {
+  padding: 12px 12px;
+}
+
+.editableTablePro .input,
+.editableTablePro .select {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.etableHeadCell {
+  white-space: nowrap;
+}
+
+.etableBodyCell {
+  vertical-align: middle;
+}
+
+.etableNumberCell {
+  text-align: right;
+}
+
+.etableClampText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.etableWrapText {
+  white-space: normal;
+}
+
+.filterBoardCard {
+  margin-bottom: 18px;
+}
+
+.filterBoardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.filterField.wide {
+  grid-column: span 2;
+}
+
+.filterHintRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.orderMetricsGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.orderCardList {
+  display: grid;
+  gap: 14px;
+}
+
+.orderOpsCard {
+  border-radius: 24px;
+  padding: 18px 18px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 44px rgba(0,0,0,0.18);
+}
+
+.orderOpsCard.open {
+  border-color: rgba(37,99,235,0.25);
+}
+
+.orderOpsTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.orderOpsIdentity {
+  min-width: 0;
+}
+
+.orderOpsTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.orderOpsTitleRow h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.statusBadge.draft {
+  background: rgba(59,130,246,0.14);
+  border-color: rgba(59,130,246,0.25);
+  color: #93c5fd;
+}
+
+.statusBadge.confirmed {
+  background: rgba(16,185,129,0.14);
+  border-color: rgba(16,185,129,0.25);
+  color: #6ee7b7;
+}
+
+.statusBadge.packed {
+  background: rgba(245,158,11,0.14);
+  border-color: rgba(245,158,11,0.26);
+  color: #fcd34d;
+}
+
+.statusBadge.shipped {
+  background: rgba(168,85,247,0.14);
+  border-color: rgba(168,85,247,0.26);
+  color: #d8b4fe;
+}
+
+.orderOpsMetaLine,
+.orderOpsSummary {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.orderOpsMetaLine {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.orderOpsActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.orderOpsChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.orderDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.detailPanel {
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.detailPanelTitle {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.detailInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.detailValue {
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--text);
+}
+
+.detailValue.multiline {
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.orderTablesGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.giftPanel {
+  margin-top: 14px;
+}
+
+.tableWrap.compact table th,
+.tableWrap.compact table td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.emptyStatePanel {
+  text-align: center;
+  padding: 36px 18px;
+}
+
+@media (max-width: 1400px) {
+  .metricsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .orderMetricsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebarPro {
+    position: static;
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .shellContent,
+  .topbarPro {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .dashboardHeroGrid,
+  .orderDetailGrid,
+  .orderTablesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterBoardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filterField.wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 760px) {
+  .metricsGrid,
+  .orderMetricsGrid,
+  .dashboardSummaryPills,
+  .filterBoardGrid,
+  .detailInfoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterField.wide {
+    grid-column: auto;
+  }
+
+  .topbarPro,
+  .pageHeader,
+  .orderOpsTop,
+  .authActionRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbarRoleWrap {
+    justify-items: start;
+  }
+
+  .pageHeaderActions,
+  .orderOpsActions {
+    justify-content: stretch;
+  }
+
+  .pageHeaderActions > *,
+  .orderOpsActions > * {
+    width: 100%;
+  }
+
+  .tabChip {
+    min-width: 100%;
+  }
+}
