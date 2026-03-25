@@ -4,6 +4,158 @@ import { loadAppData } from "../lib/db.js";
 
 const StoreCtx = createContext(null);
 
+function ensureArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function normalizeOrder(order = {}) {
+  return {
+    ...order,
+
+    id: order.id || "",
+
+    orderNumber:
+      order.orderNumber ||
+      order.order_number ||
+      order.id ||
+      "",
+
+    createdAt:
+      order.createdAt ||
+      order.created_at ||
+      "",
+
+    paidAt:
+      order.paidAt ||
+      order.paid_at ||
+      "",
+
+    sellerSubmittedAt:
+      order.sellerSubmittedAt ||
+      order.seller_submitted_at ||
+      "",
+
+    shippedAt:
+      order.shippedAt ||
+      order.shipped_at ||
+      "",
+
+    deliveredAt:
+      order.deliveredAt ||
+      order.delivered_at ||
+      "",
+
+    excelConfirmedAt:
+      order.excelConfirmedAt ||
+      order.excel_confirmed_at ||
+      order.excel_confirmed ||
+      "",
+
+    deliveryCompletedAt:
+      order.deliveryCompletedAt ||
+      order.delivery_completed_at ||
+      order.deliveredAt ||
+      order.delivered_at ||
+      "",
+
+    status:
+      order.status || "DRAFT",
+
+    sellerName:
+      order.sellerName ||
+      order.seller_name ||
+      order.influencer_name ||
+      "",
+
+    customerName:
+      order.customerName ||
+      order.customer_name ||
+      "",
+
+    recipientName:
+      order.recipientName ||
+      order.recipient_name ||
+      "",
+
+    phone:
+      order.phone || "",
+
+    country:
+      order.country || "",
+
+    city:
+      order.city || "",
+
+    postalCode:
+      order.postalCode ||
+      order.postal_code ||
+      "",
+
+    addressMain:
+      order.addressMain ||
+      order.address_main ||
+      "",
+
+    addressDetail:
+      order.addressDetail ||
+      order.address_detail ||
+      "",
+
+    address:
+      order.address || "",
+
+    saveAddressBook:
+      typeof order.saveAddressBook === "boolean"
+        ? order.saveAddressBook
+        : !!order.save_address_book,
+
+    deliveryMemo:
+      order.deliveryMemo ||
+      order.delivery_memo ||
+      "",
+
+    shippingMethod:
+      order.shippingMethod ||
+      order.shipping_method ||
+      "택배",
+
+    courier:
+      order.courier || "",
+
+    trackingNumber:
+      order.trackingNumber ||
+      order.tracking_number ||
+      "",
+
+    notes:
+      order.notes || "",
+
+    sellerSubmitted:
+      typeof order.sellerSubmitted === "boolean"
+        ? order.sellerSubmitted
+        : !!order.seller_submitted,
+
+    orderSource:
+      order.orderSource ||
+      order.order_source ||
+      "",
+
+    lastModified:
+      order.lastModified ||
+      order.last_modified ||
+      order.updated_at ||
+      order.createdAt ||
+      order.created_at ||
+      "",
+
+    nickname:
+      order.nickname ||
+      order.customerName ||
+      order.customer_name ||
+      "",
+  };
+}
+
 function normalizeState(data) {
   const catalogGifts = Array.isArray(data?.catalogGifts)
     ? data.catalogGifts
@@ -14,17 +166,21 @@ function normalizeState(data) {
   return {
     ...initialState,
     ...data,
+
     catalogGifts,
     gifts: catalogGifts,
-    mainProducts: Array.isArray(data?.mainProducts) ? data.mainProducts : [],
-    setProducts: Array.isArray(data?.setProducts) ? data.setProducts : [],
-    setComponents: Array.isArray(data?.setComponents) ? data.setComponents : [],
-    orders: Array.isArray(data?.orders) ? data.orders : [],
-    orderLines: Array.isArray(data?.orderLines) ? data.orderLines : [],
-    brands: Array.isArray(data?.brands) ? data.brands : [],
-    catalogProducts: Array.isArray(data?.catalogProducts) ? data.catalogProducts : [],
-    catalogEvents: Array.isArray(data?.catalogEvents) ? data.catalogEvents : [],
-    aliasTable: Array.isArray(data?.aliasTable) ? data.aliasTable : [],
+
+    mainProducts: ensureArray(data?.mainProducts),
+    setProducts: ensureArray(data?.setProducts),
+    setComponents: ensureArray(data?.setComponents),
+
+    orders: ensureArray(data?.orders).map(normalizeOrder),
+    orderLines: ensureArray(data?.orderLines),
+
+    brands: ensureArray(data?.brands),
+    catalogProducts: ensureArray(data?.catalogProducts),
+    catalogEvents: ensureArray(data?.catalogEvents),
+    aliasTable: ensureArray(data?.aliasTable),
   };
 }
 
@@ -92,12 +248,8 @@ export function StoreProvider({ children }) {
         setState((prev) => {
           const currentRows =
             tableKey === "gifts"
-              ? Array.isArray(prev.catalogGifts)
-                ? prev.catalogGifts
-                : []
-              : Array.isArray(prev[tableKey])
-              ? prev[tableKey]
-              : [];
+              ? ensureArray(prev.catalogGifts)
+              : ensureArray(prev[tableKey]);
 
           const nextRows =
             typeof updater === "function" ? updater(currentRows) : currentRows;
@@ -105,14 +257,14 @@ export function StoreProvider({ children }) {
           if (tableKey === "gifts" || tableKey === "catalogGifts") {
             return {
               ...prev,
-              gifts: Array.isArray(nextRows) ? nextRows : [],
-              catalogGifts: Array.isArray(nextRows) ? nextRows : [],
+              gifts: ensureArray(nextRows),
+              catalogGifts: ensureArray(nextRows),
             };
           }
 
           return {
             ...prev,
-            [tableKey]: Array.isArray(nextRows) ? nextRows : [],
+            [tableKey]: ensureArray(nextRows),
           };
         });
       },
@@ -121,12 +273,8 @@ export function StoreProvider({ children }) {
         setState((prev) => {
           const sourceRows =
             tableKey === "gifts"
-              ? Array.isArray(prev.catalogGifts)
-                ? prev.catalogGifts
-                : []
-              : Array.isArray(prev[tableKey])
-              ? prev[tableKey]
-              : [];
+              ? ensureArray(prev.catalogGifts)
+              : ensureArray(prev[tableKey]);
 
           const nextRows = sourceRows.map((r) =>
             r.id === id ? { ...r, ...patch } : r
@@ -151,12 +299,8 @@ export function StoreProvider({ children }) {
         setState((prev) => {
           const sourceRows =
             tableKey === "gifts"
-              ? Array.isArray(prev.catalogGifts)
-                ? prev.catalogGifts
-                : []
-              : Array.isArray(prev[tableKey])
-              ? prev[tableKey]
-              : [];
+              ? ensureArray(prev.catalogGifts)
+              : ensureArray(prev[tableKey]);
 
           const nextRows = [row, ...sourceRows];
 
@@ -179,12 +323,8 @@ export function StoreProvider({ children }) {
         setState((prev) => {
           const sourceRows =
             tableKey === "gifts"
-              ? Array.isArray(prev.catalogGifts)
-                ? prev.catalogGifts
-                : []
-              : Array.isArray(prev[tableKey])
-              ? prev[tableKey]
-              : [];
+              ? ensureArray(prev.catalogGifts)
+              : ensureArray(prev[tableKey]);
 
           const nextRows = sourceRows.filter((r) => r.id !== id);
 

@@ -1,0 +1,585 @@
+.sheetOrderPage {
+  position: relative;
+  min-height: calc(100vh - 64px);
+  padding: 20px;
+  background:
+    linear-gradient(rgba(243, 245, 248, 0.96), rgba(243, 245, 248, 0.96)),
+    repeating-linear-gradient(
+      to right,
+      rgba(114, 131, 160, 0.12) 0,
+      rgba(114, 131, 160, 0.12) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(114, 131, 160, 0.12) 0,
+      rgba(114, 131, 160, 0.12) 1px,
+      transparent 1px,
+      transparent 48px
+    );
+}
+
+.sheetOrderWorkspace {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #d8dee8;
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.sheetOrderTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid #e5e9f0;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+}
+
+.sheetOrderKicker {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sheetOrderTitle {
+  margin: 4px 0 0;
+  font-size: 30px;
+  line-height: 1.15;
+  color: #0f172a;
+}
+
+.sheetTopActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetBtn {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #cfd7e3;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.sheetBtn:hover {
+  background: #f8fafc;
+  border-color: #b8c4d7;
+}
+
+.sheetBtnGhost {
+  background: #f8fafc;
+}
+
+.sheetBtnExcel {
+  color: #166534;
+  border-color: #b7dfc3;
+  background: #eefaf1;
+}
+
+.sheetBtnExcel:hover {
+  background: #e3f7e8;
+}
+
+.sheetFilterPanel {
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid #e5e9f0;
+  background: rgba(248, 250, 252, 0.82);
+}
+
+.sheetFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.sheetFilterRowTop {
+  margin-bottom: 18px;
+}
+
+.sheetFilterLabel {
+  min-width: 64px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sheetDetailLabel {
+  margin-left: 18px;
+}
+
+.sheetInlineFilters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetDetailFilters {
+  flex: 1;
+  min-width: 320px;
+}
+
+.sheetControl {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #cfd7e3;
+  background: #f4f6f9;
+  border-radius: 0;
+  color: #0f172a;
+  font-size: 15px;
+  outline: none;
+}
+
+.sheetControl:focus {
+  border-color: #94a3b8;
+  background: #ffffff;
+}
+
+.sheetSelectWide {
+  min-width: 180px;
+}
+
+.sheetSelectMid {
+  min-width: 140px;
+}
+
+.sheetKeywordInput {
+  min-width: 260px;
+  flex: 1;
+}
+
+.sheetTilde {
+  color: #475569;
+  font-weight: 700;
+}
+
+.sheetFilterRowBottom {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sheetCountText {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.sheetCountText span {
+  color: #16a34a;
+}
+
+.sheetFilterRightTools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sheetSelectionHint {
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sheetTableWrap {
+  overflow: auto;
+  background: #ffffff;
+}
+
+.sheetOrderTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1460px;
+}
+
+.sheetOrderTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 12px 10px;
+  border-bottom: 1px solid #cfd7e3;
+  border-right: 1px solid #e5e9f0;
+  background: #eef2f7;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sheetOrderTable tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #e8edf4;
+  border-right: 1px solid #eef2f7;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.sheetOrderTable tbody tr:nth-child(even) td {
+  background: #fbfcfe;
+}
+
+.sheetOrderTable tbody tr:hover td {
+  background: #f2f7ff;
+}
+
+.sheetOrderTable tbody tr.active td {
+  background: #eaf3ff;
+}
+
+.sheetOrderTable .checkboxCol {
+  width: 54px;
+  text-align: center;
+}
+
+.sheetOrderTable .right {
+  text-align: right;
+}
+
+.sheetAddressCell {
+  min-width: 210px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.sheetStatusChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.sheetStatusChip.draft {
+  color: #92400e;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+}
+
+.sheetStatusChip.confirmed {
+  color: #166534;
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+}
+
+.sheetStatusChip.packed {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.sheetStatusChip.shipped {
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #dbe3ee;
+}
+
+.sheetEmptyCell {
+  padding: 28px 16px !important;
+  text-align: center;
+  color: #64748b !important;
+  background: #ffffff !important;
+}
+
+.sheetOrderDetailPanel {
+  padding: 22px 24px 26px;
+  border-top: 1px solid #e5e9f0;
+  background: #fcfdff;
+}
+
+.sheetDetailHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.sheetDetailTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sheetDetailSub {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.sheetDetailActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetDetailMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.sheetDetailMetaGrid > div {
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.metaLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metaValue {
+  display: block;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sheetMiniTitle {
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sheetMiniTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.sheetMiniTable thead th {
+  padding: 10px 12px;
+  background: #eef2f7;
+  border: 1px solid #dde5f0;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+}
+
+.sheetMiniTable tbody td {
+  padding: 10px 12px;
+  border: 1px solid #e8edf4;
+  color: #111827;
+  font-size: 14px;
+}
+
+.sheetMiniTable .right {
+  text-align: right;
+}
+
+@media (max-width: 1200px) {
+  .sheetDetailMetaGrid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .sheetOrderPage {
+    padding: 12px;
+  }
+
+  .sheetOrderTopbar,
+  .sheetFilterPanel,
+  .sheetOrderDetailPanel {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .sheetDetailLabel {
+    margin-left: 0;
+  }
+
+  .sheetDetailMetaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sheetBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sheetBtnSuccess {
+  color: #ffffff;
+  background: #16a34a;
+  border-color: #15803d;
+}
+
+.sheetBtnSuccess:hover {
+  background: #15803d;
+  border-color: #166534;
+}
+
+.sheetBtnWarn {
+  color: #92400e;
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.sheetBtnWarn:hover {
+  background: #ffedd5;
+  border-color: #fb923c;
+}
+
+.sheetShippingEditor {
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid #dbe3ee;
+  background: #ffffff;
+}
+
+.sheetShippingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.sheetShippingSubtext {
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 760px;
+}
+
+.sheetStatusPill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.sheetStatusPill--NEW {
+  color: #92400e;
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.sheetStatusPill--EXCEL_CONFIRMED {
+  color: #166534;
+  background: #ecfdf5;
+  border-color: #86efac;
+}
+
+.sheetStatusPill--IN_TRANSIT {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.sheetStatusPill--DELIVERED {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.sheetShippingSteps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sheetStepCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.sheetStepNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.sheetStepTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.sheetStepText {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+.sheetShippingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.sheetFullWidth {
+  width: 100%;
+}
+
+.sheetShippingActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.sheetShippingStateHelp {
+  margin-top: 12px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 860px) {
+  .sheetShippingSteps {
+    grid-template-columns: 1fr;
+  }
+
+  .sheetShippingGrid {
+    grid-template-columns: 1fr;
+  }
+}

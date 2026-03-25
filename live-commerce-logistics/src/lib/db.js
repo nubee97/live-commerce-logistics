@@ -318,6 +318,8 @@ export async function loadAppData() {
       orderNumber: toText(r.order_number),
       orderSource: toText(r.order_source),
       lastModified: pickLastModified(r),
+      excelConfirmedAt: r.excel_confirmed_at || "",
+      deliveryCompletedAt: r.delivery_completed_at || "",
     })).sort((a, b) => byCreatedDesc(a, b, "createdAt")),
 
     orderLines: mapRows(orderItemsRes.data, (r) => ({
@@ -356,7 +358,8 @@ export async function replaceCatalogData(payload) {
   } = payload || {};
 
   const brands = buildBrandRows(payload);
-  const mergedGifts = Array.isArray(catalogGifts) && catalogGifts.length ? catalogGifts : gifts;
+  const mergedGifts =
+    Array.isArray(catalogGifts) && catalogGifts.length ? catalogGifts : gifts;
 
   const deleteTargets = [
     "products",
@@ -691,9 +694,117 @@ export async function upsertOrder(order) {
     seller_submitted: !!order.sellerSubmitted,
     seller_submitted_at: order.sellerSubmittedAt || null,
     created_at: order.createdAt || new Date().toISOString(),
+    excel_confirmed_at: order.excelConfirmedAt || null,
+    delivery_completed_at: order.deliveryCompletedAt || null,
   };
 
   const { error } = await supabase.from("orders").upsert(payload);
+  if (error) throw new Error(error.message);
+}
+
+export async function markOrdersExcelConfirmed(orderIds = []) {
+  ensureSupabase();
+
+  const ids = Array.isArray(orderIds) ? orderIds.filter(Boolean) : [];
+  if (!ids.length) return;
+
+  const now = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ excel_confirmed_at: now })
+    .in("id", ids);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function updateOrderShippingInfo(orderId, { courier, trackingNumber }) {
+  ensureSupabase();
+
+  if (!orderId) return;
+
+  const normalizedCourier = String(courier || "").trim();
+  const normalizedTracking = String(trackingNumber || "").trim();
+
+  const existingRes = await supabase
+    .from("orders")
+    .select("id, shipped_at, delivery_completed_at")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (existingRes.error) {
+    throw new Error(existingRes.error.message);
+  }
+
+  const patch = {
+    courier: normalizedCourier,
+    tracking_number: normalizedTracking,
+  };
+
+  if (normalizedTracking && !existingRes.data?.shipped_at) {
+    patch.shipped_at = new Date().toISOString();
+  }
+
+  if (!normalizedTracking && !existingRes.data?.delivery_completed_at) {
+    patch.shipped_at = null;
+  }
+
+  const { error } = await supabase
+    .from("orders")
+    .update(patch)
+    .eq("id", orderId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function markOrderDeliveryCompleted(orderId) {
+  ensureSupabase();
+
+  if (!orderId) return;
+
+  const orderRes = await supabase
+    .from("orders")
+    .select("id, tracking_number, shipped_at")
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (orderRes.error) {
+    throw new Error(orderRes.error.message);
+  }
+
+  const trackingNumber = String(orderRes.data?.tracking_number || "").trim();
+
+  if (!trackingNumber) {
+    throw new Error("운송장번호가 있어야 배송완료 처리할 수 있습니다.");
+  }
+
+  const now = new Date().toISOString();
+
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      shipped_at: orderRes.data?.shipped_at || now,
+      delivered_at: now,
+      delivery_completed_at: now,
+    })
+    .eq("id", orderId);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function reopenOrderDelivery(orderId) {
+  ensureSupabase();
+
+  if (!orderId) return;
+
+  const { error } = await supabase
+    .from("orders")
+    .update({
+      delivered_at: null,
+      delivery_completed_at: null,
+    })
+    .eq("id", orderId);
+
   if (error) throw new Error(error.message);
 }
 
