@@ -111,7 +111,39 @@ export default function Orders() {
 
     setSelectedId(nextSelectedId);
   }
-  async function createOrderFromExcel(rows) {
+//   async function createOrderFromExcel(rows) {
+//   if (!session) return;
+
+//   const orderId = newId();
+
+//   const order = {
+//     id: orderId,
+//     orderNumber: orderId,
+//     orderSource: "EXCEL",
+//     createdAt: new Date().toISOString(),
+//     status: "DRAFT",
+//     sellerName: session.influencerName,
+//   };
+
+//   const orderLines = rows.map((r) => ({
+//     id: newId(),
+//     orderId,
+//     itemType: r.itemType || "PRODUCT",
+//     itemCode: r.itemCode,
+//     itemName: r.itemName,
+//     qty: r.qty,
+//     salePrice: r.salePrice,
+//     createdAt: new Date().toISOString(),
+//   }));
+
+//   await upsertOrder(order);
+//   await replaceOrderItems(orderId, orderLines);
+//   // await refresh();
+//   await refreshFromDb(orderId);
+
+//   setSelectedId(orderId);
+// }
+async function createOrderFromExcel(rows) {
   if (!session) return;
 
   const orderId = newId();
@@ -136,11 +168,17 @@ export default function Orders() {
     createdAt: new Date().toISOString(),
   }));
 
-  await upsertOrder(order);
-  await replaceOrderItems(orderId, orderLines);
-  await refresh();
+  try {
+    await upsertOrder(order);
+    await replaceOrderItems(orderId, orderLines);
 
-  setSelectedId(orderId);
+    // IMPORTANT FIX
+    await refreshFromDb(orderId);
+
+    setSelectedId(orderId);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
   async function persistOrderAndLines(nextOrder, nextLines, preferredSelectedId = "") {

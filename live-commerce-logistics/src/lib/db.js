@@ -343,6 +343,7 @@ export async function loadAppData() {
   };
 }
 
+
 export async function replaceCatalogData(payload) {
   ensureSupabase();
 
@@ -873,4 +874,28 @@ export async function resetAllAppData() {
   for (const table of deleteTargets) {
     await deleteAllRows(table);
   }
+}
+
+export async function saveOrderWithItems(order, items = []) {
+  ensureSupabase();
+
+  const orderId = safeId(order?.id);
+  const normalizedOrder = {
+    ...order,
+    id: orderId,
+    orderNumber: order?.orderNumber || orderId,
+    createdAt: order?.createdAt || new Date().toISOString(),
+  };
+
+  await upsertOrder(normalizedOrder);
+
+  const normalizedItems = (Array.isArray(items) ? items : []).map((item) => ({
+    ...item,
+    id: item?.id || safeId(),
+    orderId,
+  }));
+
+  await replaceOrderItems(orderId, normalizedItems);
+
+  return loadAppData();
 }

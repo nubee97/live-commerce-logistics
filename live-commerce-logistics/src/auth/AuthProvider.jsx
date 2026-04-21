@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
 
 const AuthCtx = createContext(null);
@@ -39,6 +39,20 @@ function extractRpcRow(data) {
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(DEFAULT);
   const [authLoading, setAuthLoading] = useState(false);
+
+  // Restore session on refresh
+  useEffect(() => {
+    const saved = localStorage.getItem("app_session");
+
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setSession(parsed);
+      } catch (err) {
+        console.error("Session restore failed:", err);
+      }
+    }
+  }, []);
 
   const api = useMemo(() => {
     return {
@@ -99,6 +113,7 @@ export function AuthProvider({ children }) {
           }
 
           setSession(nextSession);
+          localStorage.setItem("app_session", JSON.stringify(nextSession));
 
           return {
             ok: true,
@@ -127,6 +142,7 @@ export function AuthProvider({ children }) {
         } catch (error) {
           console.error("Logout failed:", error);
         } finally {
+          localStorage.removeItem("app_session");
           setSession(DEFAULT);
           setAuthLoading(false);
         }
