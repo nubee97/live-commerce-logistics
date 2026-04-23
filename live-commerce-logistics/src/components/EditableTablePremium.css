@@ -26,14 +26,14 @@
 }
 
 .premiumEditableCount {
-  color: #6b7b93;
+  color: #5f7491;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .premiumEditableTableWrap {
   overflow: auto;
-  border: 1px solid #e6edf7;
+  border: 1px solid #dce6f2;
   border-radius: 22px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -50,13 +50,13 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #f8fbff;
+  background: #f4f8fd;
 }
 
 .premiumEditableHeadCell {
-  padding: 14px 12px;
-  border-bottom: 1px solid #e6edf7;
-  color: #5d6f89;
+  padding: 15px 12px;
+  border-bottom: 1px solid #dce6f2;
+  color: #4f6483;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -79,9 +79,11 @@
 
 .premiumEditableBodyCell {
   padding: 12px;
-  border-bottom: 1px solid #edf2f8;
+  border-bottom: 1px solid #e8eef6;
   vertical-align: middle;
   background: #ffffff;
+  color: #10213a;
+  font-size: 14px;
 }
 
 .premiumEditableInput,
@@ -89,8 +91,8 @@
   width: 100%;
   min-height: 42px;
   border-radius: 14px;
-  border: 1px solid #dbe4ef;
-  background: #f9fbff;
+  border: 1px solid #cbd8e8;
+  background: #f8fbff;
   color: #10213a;
   padding: 0 12px;
   font-size: 14px;
@@ -100,15 +102,15 @@
 .premiumEditableInput:hover,
 .premiumEditableSelect:hover {
   background: #ffffff;
-  border-color: #bfd3ea;
+  border-color: #9ec5ff;
 }
 
 .premiumEditableInput:focus,
 .premiumEditableSelect:focus {
   outline: none;
-  border-color: #7cb0ff;
+  border-color: #60a5fa;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 .premiumEditableCompactInput {
@@ -142,8 +144,8 @@
 .premiumEditableEmpty {
   padding: 34px 18px;
   text-align: center;
-  color: #71839b;
-  font-weight: 700;
+  color: #5f7491;
+  font-weight: 800;
   background: #ffffff;
 }
 
@@ -151,11 +153,13 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  color: #10213a;
 }
 
 .premiumEditableWrapText {
   white-space: normal;
   word-break: break-word;
+  color: #10213a;
 }
 
 .etableWrapCell {

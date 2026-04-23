@@ -1,31 +1,42 @@
-.premiumOrderPage {
+.ordersPremiumPage {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 22px;
+  color: #13253f;
+  align-items: start;
+}
+
+.ordersPremiumLeft {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+.ordersPremiumRight {
   display: flex;
   flex-direction: column;
   gap: 22px;
-  padding: 0;
-  background: transparent;
-  color: #14233b;
 }
 
-.premiumOrderHero,
-.premiumFilterCard,
-.premiumSellerSection,
-.premiumDetailPanel {
-  border: 1px solid #e5edf7;
-  border-radius: 28px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.05);
-}
-
-.premiumOrderHero {
-  padding: 28px;
+.ordersPremiumHero {
   display: flex;
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
+  padding: 26px 28px;
+  border: 1px solid #e6edf7;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.05);
 }
 
-.premiumOrderEyebrow {
+.ordersPremiumHero.compact {
+  padding: 22px 24px;
+}
+
+.ordersPremiumEyebrow {
   margin-bottom: 8px;
   font-size: 12px;
   font-weight: 800;
@@ -34,515 +45,779 @@
   text-transform: uppercase;
 }
 
-.premiumOrderTitle {
+.ordersPremiumTitle {
   margin: 0;
-  font-size: 38px;
-  line-height: 1.05;
-  color: #11233d;
+  font-size: 34px;
+  line-height: 1.04;
+  color: #10213a;
 }
 
-.premiumOrderSubtitle {
+.ordersPremiumSubtitle {
   max-width: 760px;
   margin: 10px 0 0;
-  color: #64748b;
+  font-size: 14px;
   line-height: 1.65;
-  font-size: 14px;
+  color: #64748b;
 }
 
-.premiumOrderHeroActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.ordersPremiumHeroStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 360px;
 }
 
-.premiumOrderBtn,
-.premiumPageBtn {
-  border: 1px solid #d8e4f2;
-  border-radius: 14px;
+.ordersPremiumStatCard {
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid #e4ecf7;
   background: #ffffff;
-  color: #17304d;
-  padding: 11px 15px;
-  font-size: 14px;
-  font-weight: 800;
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
 }
 
-.premiumOrderBtn:hover,
-.premiumPageBtn:hover {
-  transform: translateY(-1px);
-  border-color: #9cc2ff;
-}
-
-.premiumOrderBtn.ghost {
-  background: #f8fbff;
-}
-
-.premiumOrderBtn.success {
-  background: #ecfdf5;
-  border-color: #86efac;
-  color: #166534;
-}
-
-.premiumOrderBtn.warn {
-  background: #fff7ed;
-  border-color: #fdba74;
-  color: #9a3412;
-}
-
-.premiumFilterCard,
-.premiumSellerSection,
-.premiumDetailPanel {
-  padding: 22px;
-}
-
-.premiumFilterGrid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 14px;
-  align-items: end;
-}
-
-.premiumFilterGrid .span2 {
-  grid-column: span 2;
-}
-
-.premiumFilterGrid label,
-.premiumShippingFields label {
+.ordersPremiumStatCard span {
   display: block;
   margin-bottom: 8px;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #60738f;
+  color: #72829a;
 }
 
-.premiumField {
+.ordersPremiumStatCard strong {
+  font-size: 28px;
+  font-weight: 800;
+  color: #10213a;
+}
+
+.ordersPremiumPanel {
+  border: 1px solid #e6edf7;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.ordersPremiumSidebar,
+.ordersPremiumEditor,
+.ordersPremiumBuilder {
+  padding: 22px;
+}
+
+.ordersPremiumPanelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.ordersPremiumPanelHead h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  color: #10213a;
+}
+
+.ordersPremiumPanelHead p {
+  margin: 0;
+  color: #6d7d95;
+  font-size: 14px;
+}
+
+.ordersPremiumActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ordersPremiumPrimaryBtn,
+.ordersPremiumGhostBtn,
+.ordersPremiumDangerBtn {
+  border-radius: 14px;
+  padding: 11px 15px;
+  font-size: 14px;
+  font-weight: 800;
+  border: 1px solid #dbe5f2;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.ordersPremiumPrimaryBtn {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.ordersPremiumGhostBtn {
+  background: #f8fbff;
+  color: #183252;
+}
+
+.ordersPremiumDangerBtn {
+  background: #fff7f6;
+  color: #b42318;
+  border-color: #f1cec8;
+}
+
+.ordersPremiumPrimaryBtn:hover,
+.ordersPremiumGhostBtn:hover,
+.ordersPremiumDangerBtn:hover {
+  transform: translateY(-1px);
+}
+
+.ordersPremiumFilterBar {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 10px;
+  margin: 16px 0 14px;
+}
+
+.ordersPremiumFilterBar.compact {
+  grid-template-columns: 1fr 120px;
+}
+
+.ordersPremiumSearch,
+.ordersPremiumSelect,
+.ordersPremiumInput,
+.ordersPremiumSelectField {
   width: 100%;
   min-height: 46px;
-  border: 1px solid #dae5f1;
   border-radius: 16px;
+  border: 1px solid #dbe5f1;
   background: #f9fbff;
   color: #13253f;
   padding: 0 14px;
   font-size: 14px;
 }
 
-.premiumField:focus {
+.ordersPremiumSearch:focus,
+.ordersPremiumSelect:focus,
+.ordersPremiumInput:focus,
+.ordersPremiumSelectField:focus {
   outline: none;
   border-color: #7cb0ff;
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
 }
 
-.filterActionCell {
-  display: flex;
-  justify-content: flex-end;
+.ordersPremiumInput.error,
+.ordersPremiumSelectField.error {
+  border-color: #f97066;
+  box-shadow: 0 0 0 3px rgba(249, 112, 102, 0.08);
+  background: #fffafa;
 }
 
-.premiumSectionHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  margin-bottom: 18px;
+.ordersPremiumCountRow {
+  margin-bottom: 14px;
 }
 
-.premiumSectionHead h2 {
-  margin: 0 0 6px;
-  font-size: 24px;
-  color: #11233d;
-}
-
-.premiumSectionHead p {
-  margin: 0;
-  color: #6a7b93;
-  font-size: 14px;
-}
-
-.premiumCountPill {
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #dbe5f2;
-  background: #f8fbff;
-  color: #2f4666;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.premiumSellerGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.premiumSellerCard {
-  border: 1px solid #e6edf7;
-  border-radius: 24px;
-  background: #ffffff;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
-  overflow: hidden;
-}
-
-.premiumSellerCardHead {
-  width: 100%;
-  padding: 18px 20px;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.06), transparent 24%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border: none;
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: center;
-  text-align: left;
-}
-
-.premiumSellerCardHead:hover {
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent 28%),
-    linear-gradient(180deg, #f9fbff 0%, #ffffff 100%);
-}
-
-.premiumSellerIdentity {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.premiumSellerAvatar {
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
-  color: #1d4ed8;
-  font-weight: 800;
-  font-size: 18px;
-  border: 1px solid #bfdbfe;
-}
-
-.premiumSellerName {
-  font-size: 20px;
-  font-weight: 800;
-  color: #13253f;
-}
-
-.premiumSellerMeta {
-  margin-top: 4px;
-  color: #6b7c94;
-  font-size: 13px;
-}
-
-.premiumSellerStats {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  align-items: center;
-}
-
-.statusPill {
+.ordersPremiumCountChip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 7px 11px;
+  padding: 8px 12px;
   border-radius: 999px;
+  border: 1px solid #dbe5f2;
+  background: #f8fbff;
+  color: #274266;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ordersPremiumGroup {
+  margin-top: 16px;
+}
+
+.ordersPremiumGroupLabel {
+  margin-bottom: 12px;
   font-size: 12px;
   font-weight: 800;
-  border: 1px solid transparent;
-  white-space: nowrap;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6d7f99;
 }
 
-.statusPill.new {
-  background: #fff7ed;
-  border-color: #fdba74;
-  color: #9a3412;
+.ordersPremiumInboxCard {
+  border: 1px solid #e6edf7;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
 }
 
-.statusPill.confirmed {
-  background: #ecfdf5;
-  border-color: #86efac;
-  color: #166534;
+.ordersPremiumInboxCard + .ordersPremiumInboxCard {
+  margin-top: 12px;
 }
 
-.statusPill.shipping {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  color: #1d4ed8;
+.ordersPremiumInboxCard.active {
+  border-color: #bfd8ff;
+  box-shadow: 0 16px 28px rgba(37, 99, 235, 0.08);
 }
 
-.statusPill.delivered {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #475569;
+.ordersPremiumInboxCard.confirmed {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
 }
 
-.premiumExpandMark {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: #1f3556;
+.ordersPremiumInboxMain {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.ordersPremiumInboxTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.ordersPremiumInboxCustomer {
   font-size: 20px;
   font-weight: 800;
+  color: #12243d;
+}
+
+.ordersPremiumInboxMeta {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #71839b;
+}
+
+.ordersPremiumInboxDate,
+.ordersPremiumConfirmedAt {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #6d7e96;
+}
+
+.ordersPremiumConfirmedAt {
+  color: #22a06b;
+  font-weight: 700;
+}
+
+.ordersPremiumInboxActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 16px 16px;
+}
+
+.ordersPremiumEmptyState {
+  padding: 22px;
+  border-radius: 20px;
+  border: 1px dashed #dbe5f2;
+  background: #f8fbff;
+  color: #72839a;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ordersPremiumEmptyState.large {
+  min-height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.premiumSellerOrders {
-  padding: 0 18px 18px;
+.ordersPremiumMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ordersPremiumIdText {
+  font-size: 13px;
+  color: #7a8aa2;
+  font-weight: 700;
+}
+
+.ordersPremiumError {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid #f4c7c3;
+  background: #fff7f6;
+  color: #b42318;
+  font-weight: 700;
+}
+
+.ordersPremiumTopInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ordersPremiumInfoCard,
+.ordersPremiumAddressCard,
+.ordersPremiumStepCard {
+  border: 1px solid #e6edf7;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.ordersPremiumInfoCard {
+  padding: 18px;
+}
+
+.ordersPremiumInfoLabel {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6f819a;
+}
+
+.ordersPremiumInfoValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #11233d;
+}
+
+.ordersPremiumInfoSub {
+  margin-top: 6px;
+  color: #74849b;
+  font-size: 13px;
+}
+
+.ordersPremiumCompletionValue {
+  font-size: 34px;
+  font-weight: 800;
+  color: #10213a;
+  margin-bottom: 10px;
+}
+
+.ordersPremiumProgressTrack {
+  height: 12px;
+  border-radius: 999px;
+  background: #edf3fb;
+  overflow: hidden;
+}
+
+.ordersPremiumProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb 0%, #10b981 100%);
+}
+
+.ordersPremiumFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.ordersPremiumFieldBlock.full,
+.ordersPremiumAddressCard.full {
+  grid-column: span 2;
+}
+
+.ordersPremiumFieldBlock label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #60728d;
+}
+
+.ordersPremiumAddressCard {
+  padding: 18px;
+}
+
+.ordersPremiumAddressRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ordersPremiumInput.small {
+  max-width: 180px;
+}
+
+.ordersPremiumAddressStack {
+  display: grid;
+  gap: 10px;
+}
+
+.ordersPremiumCheckboxRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: #6d7d95;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ordersPremiumBuilderStack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
-.premiumOrderCard {
-  border: 1px solid #e8eef7;
-  border-radius: 22px;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  padding: 16px;
+.ordersPremiumStepCard {
+  padding: 18px;
 }
 
-.premiumOrderCard.active {
-  border-color: #bfdbfe;
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.08);
+.ordersPremiumStepLabel {
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #3b82f6;
 }
 
-.premiumOrderCardTop {
+.ordersPremiumStepCard h3 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  color: #10213a;
+}
+
+.ordersPremiumStepCard p {
+  margin: 0 0 14px;
+  color: #6e7e95;
+  font-size: 14px;
+}
+
+.ordersPremiumStepHead {
   display: flex;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-start;
   margin-bottom: 12px;
 }
 
-.premiumOrderCardTitle {
-  font-size: 18px;
-  font-weight: 800;
-  color: #13253f;
-}
-
-.premiumOrderCardMeta {
-  margin-top: 5px;
-  color: #6b7b93;
-  font-size: 13px;
-}
-
-.premiumOrderCardActions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.premiumMiniBtn {
-  border: 1px solid #dbe5f2;
-  background: #ffffff;
-  color: #163150;
-  border-radius: 12px;
-  padding: 9px 12px;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.premiumMiniBtn:hover {
-  border-color: #9dc2ff;
-  background: #f8fbff;
-}
-
-.premiumOrderRowList {
+.ordersPremiumSummaryList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
-.premiumItemRow {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1.5fr) minmax(180px, 1fr) minmax(180px, 1fr);
-  gap: 12px;
+.ordersPremiumSummaryRow {
+  display: flex;
   align-items: center;
-  padding: 14px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
   border-radius: 18px;
   background: #f8fbff;
-  border: 1px solid #e7eef8;
+  border: 1px solid #e6edf7;
 }
 
-.premiumItemRow:hover {
-  background: #f2f7ff;
+.ordersPremiumSummaryLeft {
+  min-width: 0;
 }
 
-.premiumItemCheck {
-  text-align: center;
-}
-
-.premiumItemCheck input {
-  width: 16px;
-  height: 16px;
-  accent-color: #2563eb;
-}
-
-.premiumItemName {
-  font-size: 14px;
+.ordersPremiumSummaryName {
+  font-size: 20px;
   font-weight: 800;
-  color: #13253f;
+  color: #12243d;
 }
 
-.premiumItemMeta,
-.premiumItemMemo,
-.premiumItemTracking {
-  color: #63758f;
+.ordersPremiumSummaryMeta {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #73839a;
   font-size: 13px;
 }
 
-.premiumPagination {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 18px;
+.ordersPremiumTag {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  color: #1d4ed8;
+  font-weight: 800;
 }
 
-.premiumPageBtn {
-  min-width: 42px;
+.ordersPremiumSummaryQty {
+  font-size: 26px;
+  font-weight: 800;
+  color: #60a5fa;
+  flex: 0 0 auto;
 }
 
-.premiumPageBtn.active {
-  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-  border-color: #1d4ed8;
-  color: #ffffff;
+.ordersPremiumExpandArrow {
+  margin-right: 8px;
 }
 
-.premiumEmptyCard {
-  padding: 36px;
-  border-radius: 22px;
-  border: 1px dashed #d9e4f2;
-  background: #f8fbff;
-  text-align: center;
-  color: #70839d;
-  font-weight: 700;
+.ordersPremiumSetBreakdown {
+  margin-top: 8px;
+  margin-left: 18px;
+  color: #60728d;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.premiumDetailGrid {
+.ordersPremiumDeleteSelectedBar {
+  margin: 16px 0 10px;
+}
+
+.ordersPremiumSummaryGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 16px;
 }
 
-.premiumInfoCard {
+.ordersPremiumSummaryMetric {
   padding: 14px;
   border-radius: 18px;
   border: 1px solid #e6edf7;
   background: #f8fbff;
 }
 
-.premiumInfoCard.span2 {
-  grid-column: span 2;
-}
-
-.premiumInfoLabel {
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #6c7f99;
+.ordersPremiumSummaryMetric span {
+  display: block;
   margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #6f8099;
 }
 
-.premiumInfoValue {
-  color: #14253f;
-  font-size: 14px;
+.ordersPremiumSummaryMetric strong {
+  font-size: 24px;
+  color: #11233d;
+}
+
+.ordersPremiumSummaryMetric.warning {
+  background: #fffaf5;
+  border-color: #fed7aa;
+}
+
+.ordersPremiumWarningBox {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #fffaf5;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.ordersPremiumConfirmBar {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ordersPremiumStockPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  background: #f8fbff;
+  border: 1px solid #e3ebf5;
+  color: #41546f;
   font-weight: 700;
 }
 
-.premiumShippingPanel {
-  border-radius: 22px;
-  border: 1px solid #e6edf7;
-  background: #ffffff;
-  padding: 16px;
+.ordersPremiumStockDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
 }
 
-.premiumShippingFields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+.ordersPremiumStockDot.good {
+  background: #10b981;
 }
 
-.premiumShippingActions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 14px;
+.ordersPremiumStockDot.bad {
+  background: #ef4444;
 }
 
-.premiumItemsTableWrap {
-  margin-top: 18px;
+.ordersPremiumMiniTableWrap {
+  margin-top: 16px;
   overflow: auto;
-  border: 1px solid #e6edf7;
   border-radius: 18px;
+  border: 1px solid #e6edf7;
 }
 
-.premiumMiniTable {
+.ordersPremiumMiniTable {
   width: 100%;
   border-collapse: collapse;
 }
 
-.premiumMiniTable th,
-.premiumMiniTable td {
+.ordersPremiumMiniTable th,
+.ordersPremiumMiniTable td {
   padding: 12px;
-  border-bottom: 1px solid #edf2f7;
-  text-align: left;
+  border-bottom: 1px solid #edf2f8;
 }
 
-.premiumMiniTable th {
+.ordersPremiumMiniTable th {
   background: #f8fbff;
   color: #5e718d;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
+  text-align: left;
 }
 
-@media (max-width: 1200px) {
-  .premiumFilterGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+.ordersPremiumMiniTable .right {
+  text-align: right;
+}
+
+.ordersPremiumMissingText {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.ordersPremiumStockBadge.ok {
+  color: #166534;
+  font-weight: 800;
+}
+
+.ordersPremiumStockBadge.low {
+  color: #b42318;
+  font-weight: 800;
+}
+
+.ordersPremiumModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 60;
+}
+
+.ordersPremiumModalCard {
+  width: min(720px, 100%);
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #e6edf7;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+  padding: 22px;
+}
+
+.ordersPremiumModalHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.ordersPremiumModalHead h3 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  color: #10213a;
+}
+
+.ordersPremiumModalHead p {
+  margin: 0;
+  color: #6d7d95;
+  font-size: 14px;
+}
+
+@media (max-width: 1500px) {
+  .ordersPremiumPage {
+    grid-template-columns: 320px minmax(0, 1fr);
   }
 
-  .premiumFilterGrid .span2 {
-    grid-column: span 3;
+  .ordersPremiumHeroStats {
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .ordersPremiumPage {
+    grid-template-columns: 1fr;
   }
 
-  .premiumDetailGrid {
+  .ordersPremiumLeft {
+    position: static;
+  }
+
+  .ordersPremiumHero,
+  .ordersPremiumPanelHead,
+  .ordersPremiumStepHead,
+  .ordersPremiumConfirmBar {
+    flex-direction: column;
+  }
+
+  .ordersPremiumHeroStats {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ordersPremiumTopInfoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPremiumFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPremiumFieldBlock.full,
+  .ordersPremiumAddressCard.full {
+    grid-column: span 1;
+  }
+
+  .ordersPremiumSummaryGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 860px) {
-  .premiumOrderHero,
-  .premiumSectionHead,
-  .premiumOrderCardTop {
+@media (max-width: 720px) {
+  .ordersPremiumHero {
+    padding: 20px;
+  }
+
+  .ordersPremiumSidebar,
+  .ordersPremiumEditor,
+  .ordersPremiumBuilder {
+    padding: 18px;
+  }
+
+  .ordersPremiumTitle {
+    font-size: 30px;
+  }
+
+  .ordersPremiumHeroStats {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPremiumFilterBar,
+  .ordersPremiumFilterBar.compact {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPremiumAddressRow {
     flex-direction: column;
   }
 
-  .premiumItemRow {
-    grid-template-columns: 34px 1fr;
+  .ordersPremiumInput.small {
+    max-width: none;
   }
 
-  .premiumItemMemo,
-  .premiumItemTracking {
-    grid-column: 2;
-  }
-
-  .premiumShippingFields {
+  .ordersPremiumSummaryGrid {
     grid-template-columns: 1fr;
   }
 
-  .premiumDetailGrid {
-    grid-template-columns: 1fr;
+  .ordersPremiumSummaryRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .premiumInfoCard.span2 {
-    grid-column: span 1;
+  .ordersPremiumSummaryQty {
+    align-self: flex-end;
   }
 }
