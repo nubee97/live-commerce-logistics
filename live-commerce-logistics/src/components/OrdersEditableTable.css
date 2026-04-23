@@ -1,0 +1,108 @@
+.ordersEditableShell {
+  width: 100%;
+}
+
+.ordersEditableWrap {
+  overflow: auto;
+  border: 1px solid #dce6f2;
+  border-radius: 22px;
+  background: #ffffff;
+}
+
+.ordersEditableTable {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.ordersEditableTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f6f9fd;
+}
+
+.ordersEditableHeadCell {
+  padding: 14px 12px;
+  border-bottom: 1px solid #dce6f2;
+  color: #4f6483;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ordersEditableActionHead {
+  text-align: right;
+  min-width: 110px;
+}
+
+.ordersEditableRow:hover td {
+  background: #f8fbff;
+}
+
+.ordersEditableBodyCell {
+  padding: 12px;
+  border-bottom: 1px solid #e8eef6;
+  vertical-align: middle;
+  background: #ffffff;
+  color: #10213a;
+  font-size: 14px;
+}
+
+.ordersEditableInput,
+.ordersEditableSelect {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid #cbd8e8;
+  background: #f8fbff;
+  color: #10213a;
+  padding: 0 12px;
+  font-size: 14px;
+  transition: 0.18s ease;
+}
+
+.ordersEditableInput:hover,
+.ordersEditableSelect:hover {
+  background: #ffffff;
+  border-color: #9ec5ff;
+}
+
+.ordersEditableInput:focus,
+.ordersEditableSelect:focus {
+  outline: none;
+  border-color: #60a5fa;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.ordersEditableActionCell {
+  text-align: right;
+  min-width: 110px;
+}
+
+.ordersEditableDeleteBtn {
+  border: 1px solid #f1cec8;
+  background: #fff7f6;
+  color: #b42318;
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ordersEditableDeleteBtn:hover {
+  background: #ffeceb;
+}
+
+.ordersEditableEmpty {
+  padding: 34px 18px;
+  text-align: center;
+  color: #5f7491;
+  font-weight: 800;
+  background: #ffffff;
+}

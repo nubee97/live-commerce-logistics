@@ -1,5 +1,4 @@
 import React from "react";
-import "./EditableTablePremium.css";
 
 function getCellStyle(column = {}) {
   const style = {};
@@ -38,32 +37,29 @@ export default function EditableTable({
   const safeCols = Array.isArray(columns) ? columns : [];
 
   return (
-    <div className="premiumEditableTableShell">
-      <div className="premiumEditableToolbar noPrint">
-        <button className="premiumEditableToolbarBtn" onClick={onAdd} type="button">
+    <div>
+      <div className="toolbar noPrint">
+        <button className="btn" onClick={onAdd} type="button">
           {addLabel}
         </button>
-        <div className="premiumEditableCount">{safeRows.length} row(s)</div>
+        <div className="small">{safeRows.length} row(s)</div>
       </div>
 
-      <div className="premiumEditableTableWrap">
-        <table className="premiumEditableTable">
+      <div className="tableWrap">
+        <table className="editableTablePro">
           <thead>
             <tr>
               {safeCols.map((c) => (
                 <th
                   key={c.key}
-                  className={getCellClass(c, "premiumEditableHeadCell")}
+                  className={getCellClass(c, "etableHeadCell")}
                   style={getCellStyle(c)}
                   title={c.label}
                 >
                   {c.label}
                 </th>
               ))}
-              <th
-                className="premiumEditableHeadCell premiumEditableActionHead right noPrint"
-                style={{ minWidth: 110 }}
-              >
+              <th className="right noPrint etableHeadCell" style={{ minWidth: 110 }}>
                 Actions
               </th>
             </tr>
@@ -72,22 +68,19 @@ export default function EditableTable({
           <tbody>
             {safeRows.length === 0 && (
               <tr>
-                <td
-                  colSpan={safeCols.length + 1}
-                  className="premiumEditableEmpty"
-                >
+                <td colSpan={safeCols.length + 1} className="small">
                   {emptyText}
                 </td>
               </tr>
             )}
 
             {safeRows.map((r) => (
-              <tr key={r.id} className="premiumEditableRow">
+              <tr key={r.id}>
                 {safeCols.map((c) => {
                   const value = r?.[c.key] ?? "";
                   const type = c.type || "text";
                   const cellStyle = getCellStyle(c);
-                  const cellClass = getCellClass(c, "premiumEditableBodyCell");
+                  const cellClass = getCellClass(c, "etableBodyCell");
                   const titleText =
                     typeof value === "string" || typeof value === "number"
                       ? String(value)
@@ -101,13 +94,7 @@ export default function EditableTable({
                         style={cellStyle}
                         title={titleText}
                       >
-                        <div
-                          className={
-                            c.wrap
-                              ? "premiumEditableWrapText"
-                              : "premiumEditableClampText"
-                          }
-                        >
+                        <div className={c.wrap ? "etableWrapText" : "etableClampText"}>
                           {String(value)}
                         </div>
                       </td>
@@ -122,13 +109,7 @@ export default function EditableTable({
                         style={cellStyle}
                         title={!c.disableTitle ? titleText : undefined}
                       >
-                        <div
-                          className={
-                            c.wrap
-                              ? "premiumEditableWrapText"
-                              : "premiumEditableClampText"
-                          }
-                        >
+                        <div className={c.wrap ? "etableWrapText" : "etableClampText"}>
                           {c.render(r)}
                         </div>
                       </td>
@@ -144,13 +125,9 @@ export default function EditableTable({
                     >
                       {type === "select" ? (
                         <select
-                          className={`premiumEditableSelect ${
-                            c.compact ? "premiumEditableCompactInput" : ""
-                          }`}
+                          className={`select ${c.compact ? "etableCompactInput" : ""}`}
                           value={value}
-                          onChange={(e) =>
-                            onUpdate(r.id, { [c.key]: e.target.value })
-                          }
+                          onChange={(e) => onUpdate(r.id, { [c.key]: e.target.value })}
                         >
                           {(c.options || []).map((op) => (
                             <option key={op.value} value={op.value}>
@@ -160,9 +137,7 @@ export default function EditableTable({
                         </select>
                       ) : (
                         <input
-                          className={`premiumEditableInput ${
-                            c.compact ? "premiumEditableCompactInput" : ""
-                          }`}
+                          className={`input ${c.compact ? "etableCompactInput" : ""}`}
                           type={type}
                           value={value}
                           title={titleText}
@@ -182,18 +157,16 @@ export default function EditableTable({
                   );
                 })}
 
-                <td className="premiumEditableBodyCell premiumEditableActionCell right noPrint">
+                <td className="right noPrint" style={{ minWidth: 110 }}>
                   {onDelete ? (
                     <button
-                      className="premiumEditableDeleteBtn"
+                      className="btn danger"
                       onClick={() => onDelete(r.id)}
                       type="button"
                     >
                       Delete
                     </button>
-                  ) : (
-                    <span className="premiumEditableActionMuted">—</span>
-                  )}
+                  ) : null}
                 </td>
               </tr>
             ))}
