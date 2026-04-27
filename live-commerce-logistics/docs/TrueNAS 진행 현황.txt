@@ -1,4 +1,0 @@
-TrueNAS 진행 현황
-
-1. 백업 snapshot의 기능 검토
-2. 보안 사항 고려 -> Firework 설정할 건지 혹은 FTP로 변경 방안
