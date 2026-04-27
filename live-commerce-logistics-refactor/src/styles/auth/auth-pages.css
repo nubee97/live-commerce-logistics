@@ -1,0 +1,310 @@
+.authShell {
+  min-height: calc(100vh - 40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 32px 16px;
+}
+
+.authBackdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.14), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 24%);
+  pointer-events: none;
+}
+
+.landingWrap {
+  position: relative;
+  z-index: 1;
+  width: min(1100px, 100%);
+  display: grid;
+  gap: 20px;
+}
+
+.landingHero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+}
+
+.brandBadge {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #2563eb, #10b981);
+  color: white;
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+}
+
+.brandBadge.small {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+  border-radius: 14px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.landingTitle {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.05;
+}
+
+.landingSubtitle {
+  margin: 10px 0 0;
+  color: var(--muted);
+  max-width: 720px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.loginChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.loginChoiceCard,
+.sessionCard,
+.authCardPro {
+  position: relative;
+  z-index: 1;
+  border-radius: 22px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+}
+
+.choiceTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.choiceIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  background: rgba(37, 99, 235, 0.16);
+  color: #93c5fd;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+}
+
+.choiceIcon.seller {
+  background: rgba(16, 185, 129, 0.14);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.choiceTitle {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.choiceText {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.choiceFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 22px;
+}
+
+.miniChip {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.wideBtn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.sessionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.sessionTitle {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.sessionText {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.rolePill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  color: #93c5fd;
+}
+
+.sessionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.authCardPro {
+  width: min(560px, 100%);
+}
+
+.authBrandRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.authTitle {
+  margin: 0;
+  font-size: 28px;
+}
+
+.authSubtitle {
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.authDivider {
+  height: 1px;
+  margin: 18px 0 20px;
+  background: rgba(255,255,255,0.08);
+}
+
+.formBlock {
+  margin-bottom: 14px;
+}
+
+.labelPro {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.inputPro {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  outline: none;
+  transition: 0.18s ease;
+}
+
+.inputPro:focus {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+}
+
+.errorBanner {
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.10);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.authActionRow {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.authPrimaryBtn {
+  min-width: 220px;
+  min-height: 44px;
+}
+
+.ghostBtn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.authFootnote {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.btn.secondary {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+@media (max-width: 900px) {
+  .loginChoiceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .landingHero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sessionHeader {
+    flex-direction: column;
+  }
+}

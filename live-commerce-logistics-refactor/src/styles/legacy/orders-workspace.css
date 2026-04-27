@@ -1,0 +1,638 @@
+.ordersWorkspace {
+  display: grid;
+  grid-template-columns: 320px 1fr 460px;
+  gap: 16px;
+  align-items: start;
+}
+
+.ordersPanel {
+  border-radius: 24px;
+  padding: 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.18);
+  min-height: 760px;
+}
+.orderHeaderActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.expandArrow {
+  display: inline-block;
+  width: 14px;
+  margin-right: 6px;
+  font-weight: bold;
+}
+
+.orderedSummaryRow div div {
+  line-height: 1.6;
+}
+.inputError{
+border:2px solid #ff4d4f !important;
+background:#fff5f5;
+}
+
+.ordersPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  /* align-items: center;  */
+  margin-bottom: 16px;
+}
+
+.ordersPanelTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ordersPanelText {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.ordersFilterBar {
+  display: grid;
+  grid-template-columns: 1fr 150px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ordersCountRow {
+  margin-bottom: 14px;
+}
+
+.orderListColumn {
+  display: grid;
+  gap: 10px;
+}
+
+.orderInboxCard {
+  width: 100%;
+  text-align: left;
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.orderInboxCard:hover {
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.orderInboxCard.active {
+  border-color: rgba(16, 185, 129, 0.30);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.10);
+}
+
+.orderInboxTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.orderInboxCustomer {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.orderInboxMeta {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.orderInboxDate {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.orderEditorMeta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.orderIdText {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.editorGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.editorFull {
+  grid-column: 1 / -1;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 106px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+}
+
+.quickActionRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.summaryCard {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 14px;
+}
+
+.summaryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.summaryTitle {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.summaryItem {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryItem span {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summaryItem strong {
+  font-size: 18px;
+}
+
+.summaryItem.warning {
+  border-color: rgba(245, 158, 11, 0.24);
+}
+
+.orderActionBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.builderSection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+.builderSectionTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.stockCheckPill {
+  margin-top: 12px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.stockCheckDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.stockCheckDot.good {
+  background: #22c55e;
+  box-shadow: 0 0 0 6px rgba(34,197,94,0.12);
+}
+
+.stockCheckDot.bad {
+  background: #ef4444;
+  box-shadow: 0 0 0 6px rgba(239,68,68,0.10);
+}
+
+.stockLevelBadge {
+  display: inline-flex;
+  min-width: 42px;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.stockLevelBadge.ok {
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.20);
+  color: #86efac;
+}
+
+.stockLevelBadge.low {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+}
+
+.emptyPanelState {
+  border-radius: 18px;
+  padding: 18px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.10);
+}
+
+@media (max-width: 1400px) {
+  .ordersWorkspace {
+    grid-template-columns: 280px 1fr 400px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .ordersWorkspace {
+    grid-template-columns: 1fr;
+  }
+
+  .ordersPanel {
+    min-height: auto;
+  }
+
+  .editorGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ordersFilterBar {
+    grid-template-columns: 1fr;
+  }
+}
+.orderMetaTopRow {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sellerReadonlyCard,
+.completionCard {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.sellerReadonlyValue {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.completionValue {
+  font-size: 28px;
+  font-weight: 900;
+  margin: 6px 0 10px;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+}
+
+.summaryWarningBox {
+  margin-top: 12px;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.20);
+  color: #fcd34d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.missingProductText {
+  color: #fca5a5;
+  font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .orderMetaTopRow {
+    grid-template-columns: 1fr;
+  }
+}
+.addressBlockPro {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.addressSearchRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.addressPostalInput {
+  max-width: 180px;
+}
+
+.addressSearchBtn {
+  min-width: 110px;
+  white-space: nowrap;
+}
+
+.addressCheckboxRow {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.addressCheckboxRow input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.orderedSummaryList {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.orderedSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.orderedSummaryLeft {
+  min-width: 0;
+}
+
+.orderedSummaryName {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.orderedSummaryMeta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.orderedSummaryQty {
+  font-size: 18px;
+  font-weight: 900;
+  color: #93c5fd;
+  white-space: nowrap;
+}
+
+.orderInboxSubmitted {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6ee7b7;
+}
+
+.orderActionBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.orderListColumn {
+  display: grid;
+  gap: 18px;
+}
+
+.orderGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.orderGroupTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.orderInboxCard {
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: grid;
+  gap: 10px;
+}
+
+.orderInboxCard.added {
+  border-color: rgba(37, 99, 235, 0.20);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.orderInboxMain {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.orderInboxTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.orderInboxCustomer {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.orderInboxMeta {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.orderInboxDate {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.orderInboxSubmitted {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6ee7b7;
+  font-weight: 600;
+}
+
+.orderInboxActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.builderBlock {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.builderBlock:first-of-type {
+  margin-top: 12px;
+}
+
+.builderBlockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.builderStep {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #93c5fd;
+  margin-bottom: 6px;
+}
+
+.compactSummaryCard {
+  margin-top: 0;
+}
+
+.confirmActionBox {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.confirmMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.confirmButtonRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.orderEditorMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.orderedSummaryRow {
+  align-items: center;
+}
+
+.orderedSummaryName {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.orderedSummaryQty {
+  font-size: 18px;
+  font-weight: 900;
+  color: #93c5fd;
+}
+
+@media (max-width: 900px) {
+  .builderBlockHeader {
+    flex-direction: column;
+  }
+
+  .confirmMeta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
