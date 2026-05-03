@@ -8,6 +8,10 @@
 
 <br />
 
+## 🌐 Live Demo
+
+🔗 [View Live Demo](https://livecommercelg.netlify.app)
+
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
